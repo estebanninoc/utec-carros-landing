@@ -25,22 +25,27 @@ exactamente qué archivos espera cada una.
 - CSS: `.dp-stage{max-width:900px}`, `.dp-stage canvas{aspect-ratio:1152/768}` (video horizontal;
   en motos esta sección era 1280/732). `#dp-bar` se quitó del HTML (`initMotor` no lo usa).
 
-## 2) Motor (`#escena-motor`, `<canvas id="scr-motor-canvas">`)
+## 2) Arnés eléctrico (`#escena-motor`, `<canvas id="scr-motor-canvas">`) — LIVE desde ORDEN CA10
 
-- Carpetas esperadas: `pack-scroll/img/scroll-frames/motor/mob/` y
-  `pack-scroll/img/scroll-frames/motor/desk/`.
-- Archivos: `f_000.webp`... `initMotor()` ya está activo en el `<script>` (lo usa `#despiece`,
-  ver sección 1) — para esta escena solo hace falta una segunda llamada
-  `initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:<N>,lut:LUT_<...>,
-  dirMob:'img/scroll-frames/motor/mob/',dirDesk:'img/scroll-frames/motor/desk/'})` (ver el
-  comentario que queda justo después de la llamada de `#despiece`). Generar una LUT propia
-  midiendo los frames reales de ESTA escena (mismo método que `LUT_DESPIECE`/`LUT_MOTOR` de
-  motos, por longitud de arco) — no reusar `LUT_DESPIECE`, es específica de la cadencia de
-  ese otro video. Sin LUT, `lutPos(p)` cae a progreso lineal 0..1 (revisar que siga siendo
-  aceptable antes de asumirlo).
-- Canvas con `width="784" height="1361"` como tamaño inicial, pero `initMotor()` lo
-  redimensiona solo via `devicePixelRatio` al tamaño real renderizado — no hace falta que
-  los frames exportados sean exactamente 784×1361, solo mantener su proporción.
+- Ya NO es placeholder: usa el arnés eléctrico real en rayos X (Higgsfield minimax_h3_max,
+  `carro-arnes-rayosx.mp4` en `/opt/guardian-shared/fabrica/carros-c/vid-hf/`, 124 cuadros
+  nativos 24fps, sin interpolar). El tramo final (105-124) casi no cambia (conectores ya
+  flotando), así que se quedó a la mitad por muestreo: 104 cuadros completos (1-104) + 11 del
+  tramo final (105,107,...,123,124) = 115 cuadros, remuestreados por longitud de arco
+  (`LUT_ARNES`, mismo método que `LUT_DESPIECE` pero medido sobre esta secuencia propia).
+- Frames en `pack-scroll/img/arnes-frames/desk/` (900×440, 115 archivos, ~3.0MB) y
+  `pack-scroll/img/arnes-frames/mob/` (495×242, 115 archivos, ~1.26MB), `f_001.webp`...`f_115.webp`,
+  libwebp q=20 (ffmpeg `-c:v libwebp`), mismo mecanismo de carga diferida IO+idle de CA7.
+- Sin bbox-crop: la unión de todos los cuadros toca casi todos los bordes (los conectores
+  llegan al borde derecho en el final) — recortar se habría comido piezas reales.
+- Video horizontal (1440×704, ~2:1), a diferencia de las escenas chicas portrait de moto que
+  originaron `.dp-stage-mini`: el canvas se pisa por id (`#scr-motor-stage`) con el mismo
+  patrón full-width/aspect-ratio de `.dp-stage` (`#despiece`) en vez del `max-height:vh`
+  heredado, para que en móvil sea horizontal de borde a borde como el motor grande.
+- Usa `initMotor()` (la misma función de la sección 1, segunda llamada al final del `<script>`).
+- Chips `.dp-piezas` en español (Arnés principal, Conectores, Caja de fusibles, Computadora
+  (ECU), Relés, Sensores, Tierras, Luces): estáticos bajo el canvas, igual que en motos (ahí
+  tampoco hay lógica de mostrar/ocultar por progreso de scroll, solo lista fija).
 
 ## 3) Carrusel del hero (mockup del celular, `.device .pv`)
 

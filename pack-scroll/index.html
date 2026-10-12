@@ -397,6 +397,16 @@
      se pisa SOLO el position/top por id, nada de lo demás de .dp-stage-mini (centrado,
      max-height) cambia. */
   #scr-motor-stage{position:relative;top:0}
+  /* ORDEN CA10: #escena-motor pasa de placeholder a la animación real del arnés eléctrico
+     (Higgsfield minimax_h3_max, carro-arnes-rayosx.mp4: carro armado -> arnés y conectores
+     flotando afuera). El video es HORIZONTAL (1440x704, ~2:1), no portrait como las escenas
+     chicas de moto que originaron .dp-stage-mini (de ahí su sizing por max-height:vh, pensado
+     para alto no para ancho). Se pisa el canvas con el MISMO patrón de #despiece (full-width,
+     aspect-ratio, sin tope de vh) para que en móvil el stage sea horizontal de borde a borde,
+     igual que el motor grande — fondo negro de página = negro del frame, sin caja/recuadro. */
+  #scr-motor-stage{max-width:900px;margin:0 auto}
+  #scr-motor-stage canvas{display:block;width:100%;height:auto;max-width:100%;max-height:none;aspect-ratio:900/440}
+  @media(max-width:820px){#scr-motor-stage{width:100%;padding:0 4px}}
   /* GALERÍA con video local */
   .fx video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
   .fx{cursor:default}
@@ -604,14 +614,13 @@ document.addEventListener('click',function(ev){
   </div>
 </section>
 
+<!-- ORDEN CA10: arnés eléctrico (carro rayos X) real, mismo scroll-scrub initMotor() que
+     #despiece — ver LUT_ARNES + segunda llamada initMotor() al final del <script>. -->
 <section class="dp dp-mini" id="escena-motor">
   <div class="dp-stage-mini" id="scr-motor-stage">
-    <canvas id="scr-motor-canvas" width="784" height="1361" role="img" aria-label="Motor de carro que se desarma pieza por pieza: tapa de válvulas, árbol de levas, culata, cilindro, pistón, biela, cigüeñal, embrague, alternador."></canvas>
-    <!-- CA1: motor de moto no sirve para carro. Placeholder del mismo tamaño que el canvas;
-         initMotor() sigue abajo, comentado y listo (ver README-carros.md). -->
-    <div class="anim-ph"><span>Animación de carro — en producción</span></div>
+    <canvas id="scr-motor-canvas" width="900" height="440" role="img" aria-label="Arnés eléctrico de un carro en rayos X que se abre mientras bajas: arnés principal, conectores, caja de fusibles, computadora (ECU), relés, sensores, tierras y luces por separado."></canvas>
   </div>
-  <ul class="dp-piezas"><li>Motor</li><li>Tapa de válvulas</li><li>Árbol de levas</li><li>Culata</li><li>Cilindro</li><li>Pistón</li><li>Biela</li><li>Cigüeñal</li><li>Embrague</li><li>Alternador</li></ul>
+  <ul class="dp-piezas"><li>Arnés principal</li><li>Conectores</li><li>Caja de fusibles</li><li>Computadora (ECU)</li><li>Relés</li><li>Sensores</li><li>Tierras</li><li>Luces</li></ul>
 </section>
 
 <!-- ORDEN AY9 (heredado de motos): se queda SOLO el despiece del motor. Carburador/freno/
@@ -842,16 +851,54 @@ document.addEventListener('click',function(ev){
    se completa en segundo plano con requestIdleCallback. draw() nunca deja el canvas vacío:
    si el frame exacto no está listo usa el más cercano ya cargado (nearestLoaded); antes de
    que la sección entre en el margen del observer se fuerza el frame 1 (fallback AZ5).
-   #escena-motor (motor chico, portrait) sigue en placeholder CA1 — initMotor queda listo para
-   reusarse ahí también cuando haya frames reales de esa escena. */
+   #escena-motor (arnés eléctrico) pasó de placeholder a real en ORDEN CA10, ver comentario
+   junto a LUT_ARNES más abajo.
+   ORDEN CA10 (fix, 2 escenas a la vez): con #despiece + #escena-motor activas juntas,
+   loadKeyframes() dispara ~14-15 Image() de golpe POR escena (a propósito, sin cola, para
+   tener algo que mostrar en cualquier punto del scrub cuanto antes) — entre las 2 son ~29
+   decode() simultáneos, y en pruebas con Playwright bajo carga de memoria eso puede tirar
+   ERR_INSUFFICIENT_RESOURCES (#despiece solo no lo disparaba). motorLoadEnqueue() (cola
+   global compartida entre TODAS las instancias de initMotor, ver justo antes de la función)
+   limita a MOTOR_LOAD_MAX descargas/decode() en vuelo entre las 2 escenas. Además, antes
+   "decode() que cuenta el resolve y el reject por igual" marcaba ok[i]=true aunque la carga
+   fallara — con una imagen rota de verdad eso hacía tirar drawImage() ("broken state") sin
+   capturar. mark() ahora solo marca ok[i]=true si im.naturalWidth>0 (carga real); si falla,
+   nearestLoaded() sigue mostrando el cuadro más cercano ya cargado, sin reventar draw(). */
+/* ORDEN CA10: #escena-motor/scr-motor-canvas pasa de placeholder a la animación real del
+   arnés eléctrico (Higgsfield minimax_h3_max, carro-arnes-rayosx.mp4: 124 cuadros nativos
+   24fps; el tramo final 105-124 queda casi estático con los conectores ya flotando, así
+   que se queda a la mitad por muestreo — 104 cuadros completos + 11 del tramo final — en
+   vez de los 124 íntegros, sin perder el leve flote. LUT_ARNES por longitud de arco igual
+   método que LUT_DESPIECE, medida sobre ESTA secuencia de 115 cuadros (no reusa LUT_DESPIECE,
+   es propia de la cadencia de este video). Sin bbox-crop: el contenido toca casi todos los
+   bordes en algún punto de la secuencia (los conectores llegan al borde derecho en el final),
+   igual que #despiece — recortar se habría comido piezas reales. */
+var LUT_ARNES=[1.0,1.247,1.493,1.74,1.987,2.15,2.309,2.469,2.628,2.787,2.946,3.136,3.344,3.551,3.758,3.966,4.122,4.269,4.416,4.562,4.709,4.856,5.004,5.219,5.434,5.649,5.865,6.069,6.256,6.443,6.629,6.816,7.004,7.294,7.585,7.875,8.139,8.382,8.626,8.869,9.166,9.525,9.884,10.211,10.523,10.835,11.233,11.726,12.18,12.586,12.992,13.66,14.256,14.774,15.541,16.374,17.162,18.37,19.646,21.619,26.594,29.76,30.901,31.987,32.687,33.383,34.051,34.485,34.919,35.375,35.836,36.226,36.578,36.929,37.338,37.762,38.133,38.436,38.74,39.057,39.46,39.862,40.207,40.522,40.838,41.225,41.689,42.124,42.497,42.871,43.329,43.833,44.271,44.675,45.115,45.693,46.216,46.676,47.193,47.844,48.34,48.788,49.437,50.171,50.698,51.323,52.065,52.67,53.346,54.088,54.708,55.476,56.265,56.9,57.672,58.416,59.164,60.087,60.812,61.72,62.554,63.442,64.38,65.25,66.217,67.09,68.205,69.062,70.2,71.195,72.367,73.554,74.621,75.86,76.995,78.426,79.987,81.361,82.893,84.615,86.432,88.414,90.601,93.055,96.003,99.256,102.813,106.25,109.783,115.0];
 var LUT_DESPIECE=[1.0,3.621,5.079,5.968,6.76,8.145,8.856,9.309,9.61,9.905,10.226,10.59,10.942,11.27,11.609,12.523,12.835,13.138,13.378,13.618,13.857,14.193,14.534,14.823,15.091,15.361,15.62,15.879,16.138,16.431,16.723,17.022,17.33,17.638,17.962,18.286,18.609,18.931,19.244,19.533,19.821,20.098,20.368,20.637,20.929,21.224,21.533,21.877,22.223,22.59,22.955,23.238,23.521,23.791,24.033,24.276,25.034,25.539,25.882,26.248,26.623,26.937,27.224,27.513,27.828,28.143,28.569,29.377,30.105,30.485,30.787,31.082,31.41,31.807,32.284,32.867,33.449,34.46,34.757,35.056,35.551,36.093,36.709,37.418,38.073,38.684,39.248,39.807,40.394,41.073,41.752,42.523,43.247,43.867,44.47,45.023,45.439,46.214,47.287,47.966,48.578,49.013,49.409,49.983,51.171,51.895,52.419,52.881,53.362,53.93,54.493,55.635,56.179,56.732,57.367,58.037,58.649,59.27,59.915,60.636,61.586,62.342,63.082,63.78,64.522,65.352,66.205,66.984,67.756,69.064,69.966,70.715,72.081,73.67,74.474,76.038,77.84,79.279,81.369,83.596,86.541,90.509,94.8,102.362,110.0];
+/* ORDEN CA10: con 2 escenas initMotor() activas (#despiece + #escena-motor), cada una
+   dispara ~14 Image() de golpe en loadKeyframes() (sin cola, por diseño, para tener algo
+   que mostrar en cualquier punto del scrub cuanto antes) — entre las 2 son ~29 decode()
+   simultáneos y Chromium tira ERR_INSUFFICIENT_RESOURCES (confirmado con Playwright:
+   #despiece solo no lo disparaba). Cola global compartida entre TODAS las instancias de
+   initMotor (viven en el mismo <script>) que limita a MOTOR_LOAD_MAX descargas/decode()
+   en vuelo a la vez, sin importar cuántas escenas pidan frames al mismo tiempo. */
+var MOTOR_LOAD_MAX=4, motorLoadQ=[], motorLoadActive=0;
+function motorLoadNext(){
+  while(motorLoadActive<MOTOR_LOAD_MAX && motorLoadQ.length){
+    var job=motorLoadQ.shift(); motorLoadActive++; job();
+  }
+}
+function motorLoadEnqueue(run){
+  motorLoadQ.push(function(){ run(function(){ motorLoadActive--; motorLoadNext(); }); });
+  motorLoadNext();
+}
 function initMotor(cfg){
   var stage=document.getElementById(cfg.stage), canvas=document.getElementById(cfg.canvas);
   if(!stage||!canvas) return;
   var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut, KEY=8;
   var dir = window.matchMedia('(max-width:720px)').matches ? cfg.dirMob : cfg.dirDesk;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var imgs=[], ok=[], started=false, want=0, cur=0, drawnPos=-1, running=false;
+  var imgs=[], ok=[], queued=[], started=false, want=0, cur=0, drawnPos=-1, running=false;
   var W=0, H=0, lastWidth=window.innerWidth;
   var idleFn = window.requestIdleCallback || function(fn){ setTimeout(fn,60); };
   function src(i){ return dir+'f_'+String(i).padStart(3,'0')+'.webp'; }
@@ -890,14 +937,19 @@ function initMotor(cfg){
     ctx.drawImage(imgs[i0],0,0,W,H);
     if(i1!==i0 && frac>0.004 && imgs[i1] && ok[i1]){ ctx.globalAlpha=frac; ctx.drawImage(imgs[i1],0,0,W,H); ctx.globalAlpha=1; }
   }
-  function load(i){
-    if(imgs[i]) return;
-    var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
-    var mark=function(){
-      if(imgs[i]!==im) return; ok[i]=true;
-      draw(started?lutPos(cur):1,true);
-    };
-    if(im.decode){ im.decode().then(mark, mark); } else { im.onload=mark; }
+  function load(i,cb){
+    if(imgs[i]||queued[i]){ if(cb) cb(); return; }
+    queued[i]=true;
+    motorLoadEnqueue(function(done){
+      var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
+      var mark=function(){
+        if(imgs[i]===im && im.naturalWidth>0) ok[i]=true;
+        draw(started?lutPos(cur):1,true);
+        if(cb) cb();
+        done();
+      };
+      if(im.decode){ im.decode().then(mark, mark); } else { im.onload=mark; im.onerror=mark; }
+    });
   }
   function loadKeyframes(){
     for(var i=1;i<=N;i+=KEY) load(i);
@@ -908,9 +960,8 @@ function initMotor(cfg){
     function step(){
       while(idx<=N && ok[idx]) idx++;
       if(idx>N) return;
-      load(idx);
-      idx++;
-      idleFn(step,{timeout:500});
+      var i=idx; idx++;
+      load(i,function(){ idleFn(step,{timeout:500}); });
     }
     idleFn(step,{timeout:500});
   }
@@ -960,10 +1011,8 @@ function initMotor(cfg){
 }
 initMotor({stage:'dp-stage',canvas:'dp-canvas',n:110,lut:LUT_DESPIECE,
   dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
-/* #escena-motor (motor chico, placeholder CA1): activar con una segunda llamada igual,
-initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:<N>,lut:LUT_<...>,
-  dirMob:'img/scroll-frames/motor/mob/',dirDesk:'img/scroll-frames/motor/desk/'});
-y borrar su <div class="anim-ph"> en el HTML, cuando haya frames reales de esa escena. */
+initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:115,lut:LUT_ARNES,
+  dirMob:'img/arnes-frames/mob/',dirDesk:'img/arnes-frames/desk/'});
 </script>
 </body>
 </html>
