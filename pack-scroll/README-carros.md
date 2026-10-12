@@ -15,11 +15,15 @@ exactamente qué archivos espera cada una.
   (`LUT_DESPIECE` en el `<script>`, mismo método que `LUT_MOTOR` documentaba para motos).
   ORDEN CA7 (perf) los bajó a 110 cuadros (subsample por índice viejo, LUT re-escalada al
   nuevo rango 1..110 preservando el mismo ritmo) para entrar en presupuesto de peso.
-- Frames en `pack-scroll/img/dp-frames/desk/` (800×533, 110 archivos, ~3.1MB) y
-  `pack-scroll/img/dp-frames/mob/` (440×293, 110 archivos, ~1.3MB), `f_001.webp`...`f_110.webp`,
-  re-encodeados a libwebp q=20 (ffmpeg `-c:v libwebp`). CA7 también quitó el `preloadAll()`
-  de `initMotor()`: ahora carga por `IntersectionObserver` (keyframes cada 8 + relleno con
-  `requestIdleCallback`), ver comentario ORDEN CA7 junto a `initMotor` en `index.html`.
+- Frames en `pack-scroll/img/dp-frames/desk/` (1024×683, 110 archivos, ~7.7MB) y
+  `pack-scroll/img/dp-frames/mob/` (660×440, 110 archivos, ~3.7MB), `f_001.webp`...`f_110.webp`.
+  ORDEN CA11 los re-extrajo del mismo `.mp4` (mismo índice nativo por cada `f_NNN`, matcheado
+  por MSE contra el frame viejo para no tocar recorte/ritmo/LUT) a mayor resolución/calidad
+  (libwebp q40 mob / q55 desk, método 6) — CA7 los había bajado a 440/800px q=20 por peso, pero
+  eso se veía "muy GIF" en celular (DPR3 estira 440px ~2.6x) y con bloques visibles. CA7 también
+  quitó el `preloadAll()` de `initMotor()`: ahora carga por `IntersectionObserver` (keyframes
+  cada 4 desde CA11 + relleno con `requestIdleCallback`), ver comentario ORDEN CA7/CA11 junto a
+  `initMotor` en `index.html`.
 - Usa `initMotor()` (NO `initEscena()`): sin pin/sticky, igual que `#escena-motor` en motos
   (AY6-AY9 + AZ2/AZ3/AZ5) — `initEscena()` se quitó del script por quedar sin uso.
 - CSS: `.dp-stage{max-width:900px}`, `.dp-stage canvas{aspect-ratio:1152/768}` (video horizontal;
@@ -33,9 +37,12 @@ exactamente qué archivos espera cada una.
   flotando), así que se quedó a la mitad por muestreo: 104 cuadros completos (1-104) + 11 del
   tramo final (105,107,...,123,124) = 115 cuadros, remuestreados por longitud de arco
   (`LUT_ARNES`, mismo método que `LUT_DESPIECE` pero medido sobre esta secuencia propia).
-- Frames en `pack-scroll/img/arnes-frames/desk/` (900×440, 115 archivos, ~3.0MB) y
-  `pack-scroll/img/arnes-frames/mob/` (495×242, 115 archivos, ~1.26MB), `f_001.webp`...`f_115.webp`,
-  libwebp q=20 (ffmpeg `-c:v libwebp`), mismo mecanismo de carga diferida IO+idle de CA7.
+- Frames en `pack-scroll/img/arnes-frames/desk/` (1100×538, 115 archivos, ~7.6MB) y
+  `pack-scroll/img/arnes-frames/mob/` (700×342, 115 archivos, ~3.4MB), `f_001.webp`...`f_115.webp`.
+  Re-extraídos en ORDEN CA11 con el mismo estándar de calidad que el despiece (libwebp q40 mob /
+  q55 desk, método 6, mismos índices nativos de `f_NNN` matcheados por MSE); antes estaban a
+  495/900px q=20 igual que el despiece pre-CA11. Mismo mecanismo de carga diferida IO+idle
+  (keyframes cada 4 desde CA11) de CA7.
 - Sin bbox-crop: la unión de todos los cuadros toca casi todos los bordes (los conectores
   llegan al borde derecho en el final) — recortar se habría comido piezas reales.
 - Video horizontal (1440×704, ~2:1), a diferencia de las escenas chicas portrait de moto que

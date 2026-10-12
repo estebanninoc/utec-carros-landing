@@ -1,0 +1,226 @@
+{
+  "console_errors": {
+    "390-antes": [],
+    "390-despues": [],
+    "1440-antes": [],
+    "1440-despues": []
+  },
+  "canvas_checks": [
+    {
+      "width": 390,
+      "label": "antes",
+      "scene": "despiece",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 2752,
+      "nonTransparent": 2752
+    },
+    {
+      "width": 390,
+      "label": "antes",
+      "scene": "despiece",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 2752,
+      "nonTransparent": 2752
+    },
+    {
+      "width": 390,
+      "label": "antes",
+      "scene": "despiece",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 2752,
+      "nonTransparent": 2752
+    },
+    {
+      "width": 390,
+      "label": "antes",
+      "scene": "arnes",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 4512,
+      "nonTransparent": 4512
+    },
+    {
+      "width": 390,
+      "label": "antes",
+      "scene": "arnes",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 4512,
+      "nonTransparent": 4512
+    },
+    {
+      "width": 390,
+      "label": "antes",
+      "scene": "arnes",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 4512,
+      "nonTransparent": 4512
+    },
+    {
+      "width": 390,
+      "label": "despues",
+      "scene": "despiece",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 2752,
+      "nonTransparent": 2752
+    },
+    {
+      "width": 390,
+      "label": "despues",
+      "scene": "despiece",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 2752,
+      "nonTransparent": 2752
+    },
+    {
+      "width": 390,
+      "label": "despues",
+      "scene": "despiece",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 2752,
+      "nonTransparent": 2752
+    },
+    {
+      "width": 390,
+      "label": "despues",
+      "scene": "arnes",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 4512,
+      "nonTransparent": 4512
+    },
+    {
+      "width": 390,
+      "label": "despues",
+      "scene": "arnes",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 4512,
+      "nonTransparent": 4512
+    },
+    {
+      "width": 390,
+      "label": "despues",
+      "scene": "arnes",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 4512,
+      "nonTransparent": 4512
+    },
+    {
+      "width": 1440,
+      "label": "antes",
+      "scene": "despiece",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 2400,
+      "nonTransparent": 2400
+    },
+    {
+      "width": 1440,
+      "label": "antes",
+      "scene": "despiece",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 2400,
+      "nonTransparent": 2400
+    },
+    {
+      "width": 1440,
+      "label": "antes",
+      "scene": "despiece",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 2400,
+      "nonTransparent": 2400
+    },
+    {
+      "width": 1440,
+      "label": "antes",
+      "scene": "arnes",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 3280,
+      "nonTransparent": 3280
+    },
+    {
+      "width": 1440,
+      "label": "antes",
+      "scene": "arnes",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 3280,
+      "nonTransparent": 3280
+    },
+    {
+      "width": 1440,
+      "label": "antes",
+      "scene": "arnes",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 3280,
+      "nonTransparent": 3280
+    },
+    {
+      "width": 1440,
+      "label": "despues",
+      "scene": "despiece",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 2400,
+      "nonTransparent": 2400
+    },
+    {
+      "width": 1440,
+      "label": "despues",
+      "scene": "despiece",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 2400,
+      "nonTransparent": 2400
+    },
+    {
+      "width": 1440,
+      "label": "despues",
+      "scene": "despiece",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 2400,
+      "nonTransparent": 2400
+    },
+    {
+      "width": 1440,
+      "label": "despues",
+      "scene": "arnes",
+      "moment": "p=0",
+      "empty": false,
+      "sampled": 3280,
+      "nonTransparent": 3280
+    },
+    {
+      "width": 1440,
+      "label": "despues",
+      "scene": "arnes",
+      "moment": "p=0.5",
+      "empty": false,
+      "sampled": 3280,
+      "nonTransparent": 3280
+    },
+    {
+      "width": 1440,
+      "label": "despues",
+      "scene": "arnes",
+      "moment": "p=1",
+      "empty": false,
+      "sampled": 3280,
+      "nonTransparent": 3280
+    }
+  ]
+}

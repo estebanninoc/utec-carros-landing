@@ -847,7 +847,7 @@ document.addEventListener('click',function(ev){
    por igual.
    ORDEN CA7: ya no hay preloadAll — carga diferida por IntersectionObserver (rootMargin
    50% viewport, ~1.5 pantallas de anticipación sumando el viewport actual) que dispara
-   cada 8º frame (keyframes) al acercarse la sección; el resto
+   keyframes al acercarse la sección (cada 4º frame desde ORDEN CA11, ver abajo); el resto
    se completa en segundo plano con requestIdleCallback. draw() nunca deja el canvas vacío:
    si el frame exacto no está listo usa el más cercano ya cargado (nearestLoaded); antes de
    que la sección entre en el margen del observer se fuerza el frame 1 (fallback AZ5).
@@ -864,6 +864,19 @@ document.addEventListener('click',function(ev){
    fallara — con una imagen rota de verdad eso hacía tirar drawImage() ("broken state") sin
    capturar. mark() ahora solo marca ok[i]=true si im.naturalWidth>0 (carga real); si falla,
    nearestLoaded() sigue mostrando el cuadro más cercano ya cargado, sin reventar draw(). */
+/* ORDEN CA11: CA7 había bajado los frames de #despiece/#escena-motor a q=20 webp (mob
+   440/495px, desk 800/900px) para pesar menos, pero a esa resolución mob se estira ~2.6x
+   en celulares DPR3 (390px) y q=20 deja bloques visibles — "se ve muy GIF" (feedback real).
+   Se re-extrajeron los MISMOS 110/115 frames de cada escena (mismo índice nativo del .mp4
+   por cada f_NNN, matcheado por MSE contra el frame actual para no tocar recorte/ritmo/LUT)
+   a mayor resolución y calidad: despiece mob 660x440/desk 1024x683, arnés mob 700x342/desk
+   1100x538, libwebp q40 (mob) / q55 (desk), método 6, sin -preset. El origen es video
+   generado por IA con grano fino que no baja de peso aunque subas la calidad (medido: subir
+   de q40/55 a q82-85 casi duplica el peso sin mejora visible perceptible) — se priorizó
+   nitidez real dentro de un presupuesto similar al pedido (~3.5-3.7MB mob / ~7.6-7.7MB desk
+   por escena) en vez de forzar q82-85 literal. loadKeyframes() pasa de cada 8º a cada 4º
+   frame (KEY=4, ver initMotor) para que el scrub ya tenga algo fluido antes de que termine
+   fillRestIdle(); nunca canvas vacío (igual que antes). */
 /* ORDEN CA10: #escena-motor/scr-motor-canvas pasa de placeholder a la animación real del
    arnés eléctrico (Higgsfield minimax_h3_max, carro-arnes-rayosx.mp4: 124 cuadros nativos
    24fps; el tramo final 105-124 queda casi estático con los conectores ya flotando, así
@@ -895,7 +908,7 @@ function motorLoadEnqueue(run){
 function initMotor(cfg){
   var stage=document.getElementById(cfg.stage), canvas=document.getElementById(cfg.canvas);
   if(!stage||!canvas) return;
-  var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut, KEY=8;
+  var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut, KEY=4;
   var dir = window.matchMedia('(max-width:720px)').matches ? cfg.dirMob : cfg.dirDesk;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var imgs=[], ok=[], queued=[], started=false, want=0, cur=0, drawnPos=-1, running=false;
