@@ -861,7 +861,14 @@ document.addEventListener('click',function(ev){
    que motos; resolución/calidad iguales en mob y desk: despiece 600x400(mob)/1080x720(desk),
    arnés 630x308(mob)/1080x528(desk), libwebp q82 método 6 (el mismo techo de calidad visible
    que ya había identificado CA11 para este material con grano de IA). */
-var LUT_ARNES=[1.0,1.287,1.575,1.862,2.097,2.283,2.469,2.655,2.84,4.035,4.279,4.523,4.767,5.008,5.179,5.35,5.521,5.693,5.864,6.051,6.301,6.552,6.802,7.046,7.266,7.487,7.707,7.928,8.226,8.562,8.898,10.203,10.493,10.784,11.106,11.521,11.935,12.306,12.668,13.048,13.617,14.154,14.626,16.161,16.939,17.559,18.304,19.321,20.298,21.642,24.231,26.854,32.844,36.097,37.298,38.324,39.09,39.888,41.416,41.899,42.426,42.964,43.379,43.784,44.229,44.719,45.145,45.486,45.826,47.229,47.696,48.127,48.49,48.853,49.31,49.829,50.292,50.728,51.215,51.79,53.289,53.744,54.286,54.941,55.493,56.047,56.79,57.365,57.874,58.677,60.39,60.998,61.861,62.585,63.346,64.164,64.864,66.782,67.561,68.35,69.213,70.002,72.029,72.834,73.848,74.747,75.802,76.773,78.826,79.778,80.984,81.905,84.106,85.214,86.497,87.859,88.911,91.301,92.637,94.091,95.653,98.238,99.917,101.624,104.498,106.597,109.731,112.213,115.889,118.804,122.62,125.657,129.74,134.438,138.564,142.924,148.0];
+/* ORDEN CB2: LUT_ARNES recalculada desde cero sobre los frames ACTUALES (post-CB1
+   normalize_arnes.py) — la anterior venía de antes del re-escalado y ya no correspondía al
+   contenido real. Mismo método arc-length (lut.py, diffs de luminancia 64x64 vía ffmpeg)
+   + suavizado de ventana 9 sobre los diffs (normaliza_arnes.py ya probó ese window) para
+   que el paso quede más parejo; igual quedan saltos de hasta ~5 frames en el tramo final
+   (f110-148, la pieza se abre/separa rápido en pocos cuadros — inherente al contenido, la
+   LUT vieja tenía el mismo fenómeno ahí mismo, 26.85->32.84). */
+var LUT_ARNES=[1.0,1.354,1.708,2.062,2.416,2.769,3.119,3.461,3.803,4.154,4.518,4.882,5.265,5.655,6.044,6.418,6.792,7.18,7.587,7.994,8.368,8.742,9.128,9.538,9.948,10.408,10.875,11.377,11.892,12.491,13.108,13.703,14.312,14.935,15.6,16.294,17.029,17.955,18.916,19.918,20.981,22.057,23.351,24.84,26.791,29.041,31.441,33.369,34.776,35.921,36.967,37.857,38.692,39.428,40.109,40.773,41.393,41.989,42.575,43.159,43.74,44.314,44.882,45.443,46.002,46.539,47.079,47.637,48.214,48.827,49.455,50.093,50.758,51.415,52.071,52.763,53.434,54.098,54.782,55.511,56.241,56.93,57.634,58.343,59.057,59.821,60.565,61.313,62.085,62.956,63.753,64.566,65.424,66.322,67.226,68.142,69.001,69.957,70.87,71.773,72.748,73.722,74.705,75.708,76.682,77.714,78.788,79.995,81.113,82.267,83.484,84.702,85.981,87.333,88.562,89.789,91.09,92.42,93.744,95.063,96.368,97.847,99.419,100.952,102.528,104.231,106.226,108.386,111.35,115.196,119.453,123.646,127.965,132.749,138.074,142.952,148.0];
 var LUT_DESPIECE=[1.0,5.97,7.666,8.903,11.592,12.145,12.462,12.779,13.149,13.641,14.111,14.519,14.928,17.103,17.296,17.489,17.682,17.875,18.115,18.443,18.771,19.094,19.405,19.717,20.027,20.328,20.629,20.931,21.223,21.513,21.803,23.093,23.381,23.67,23.958,24.242,24.525,24.808,25.093,25.38,25.667,25.955,26.237,26.518,26.799,27.081,27.366,27.65,27.934,29.233,29.536,29.839,30.144,30.451,30.758,31.037,31.212,31.386,31.561,31.735,31.91,33.091,33.439,33.787,35.14,35.5,35.86,36.126,36.334,36.541,36.748,36.955,37.33,37.75,39.11,39.551,39.992,41.253,41.51,41.768,42.047,42.524,43.001,43.494,43.987,45.241,45.544,45.848,47.292,47.878,48.498,49.138,49.825,50.522,51.231,51.96,53.732,54.541,55.355,56.164,57.023,57.845,58.709,60.326,60.814,62.372,63.296,64.097,64.616,66.253,68.017,68.983,69.527,70.124,72.169,74.014,74.622,75.424,76.541,78.718,79.938,81.258,82.589,85.05,86.684,88.173,91.051,93.006,94.668,98.572,101.563,105.77,111.457,118.767,128.015,137.704,148.0];
 /* ORDEN CA12 (2 fixes tras medir, local y en vivo):
    1) con #despiece + #escena-motor cargando completo a la vez (las 2 pueden entrar en el
@@ -878,15 +885,20 @@ var LUT_DESPIECE=[1.0,5.97,7.666,8.903,11.592,12.145,12.462,12.779,13.149,13.641
       el orden. Con las 2 capas (orden parejo + tope real de vuelo) no hay errores de consola
       y ambas escenas avanzan sin que una ahogue a la otra. */
 // OK-ESTEBAN:2026-10-12 CA12 traba
+/* ORDEN CB2 (Esteban: "súper bugueada... que se vea smooth"): motorChunkPump ya no alterna
+   ciego round-robin — ordena los runners activos por distancia real de su escena al centro
+   del viewport (dist()) y siempre atiende primero a la que está más cerca, igual que pedía
+   la orden ("prioridad a la animación que esté más cerca del viewport"). */
 var motorChunkRunners=[], motorChunkPumping=false;
 function motorChunkPump(){
   if(!motorChunkRunners.length){ motorChunkPumping=false; return; }
+  motorChunkRunners.sort(function(a,b){ return a.dist()-b.dist(); });
   var r=motorChunkRunners.shift();
-  if(r()) motorChunkRunners.push(r);
+  if(r.run()) motorChunkRunners.push(r);
   setTimeout(motorChunkPump,60);
 }
-function motorChunkRegister(fn){
-  motorChunkRunners.push(fn);
+function motorChunkRegister(run,dist){
+  motorChunkRunners.push({run:run,dist:dist||function(){return 0;}});
   if(!motorChunkPumping){ motorChunkPumping=true; motorChunkPump(); }
 }
 var MOTOR_LOAD_MAX=4, motorLoadQ=[], motorLoadActive=0;
@@ -905,7 +917,7 @@ function initMotor(cfg){
   var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut;
   var dir = window.matchMedia('(max-width:720px)').matches ? cfg.dirMob : cfg.dirDesk;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var imgs=[], ok=[], requested=[], loadedCount=0, allReady=false, started=false, want=0, cur=0, drawnPos=-1, running=false, gen=0;
+  var imgs=[], ok=[], requested=[], loadedCount=0, allReady=false, started=false, want=0, cur=0, drawnPos=-1, running=false, gen=0, maxContig=0;
   var W=0, H=0, lastWidth=window.innerWidth;
   var READY_FRAC=0.9, READY_TIMEOUT_MS=4000;
   function src(i){ return dir+'f_'+String(i).padStart(3,'0')+'.webp'; }
@@ -932,7 +944,13 @@ function initMotor(cfg){
   }
   function draw(pos,force){
     if(!imgs.length || !W || !H) return;
-    if(!allReady && !cfg.gracefulDegrade) pos=1;
+    /* ORDEN CB2: gracefulDegrade ya NO significa "mostrar el más cercano cargado donde sea"
+       (eso era lo que saltaba 1<->148 con loadOrder:'edges') — ahora tapa la posición a
+       mostrar en la frontera contigua ya cargada desde el frame 1 (maxContig), así el
+       dibujo nunca muestra un frame no contiguo ni retrocede: solo avanza hasta donde ya
+       llegó la carga secuencial real. Sin gracefulDegrade (#despiece) sigue igual que
+       siempre: frame 1 fijo hasta allReady. */
+    if(!allReady) pos = cfg.gracefulDegrade ? Math.min(pos,Math.max(1,maxContig)) : 1;
     if(!force && Math.abs(pos-drawnPos)<0.01) return;
     var i0=Math.floor(pos), frac=pos-i0, i1=i0+1;
     if(i0<1){ i0=1; i1=1; frac=0; } if(i1>N){ i1=N; if(i0>N) i0=N; }
@@ -956,7 +974,7 @@ function initMotor(cfg){
       var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
       var mark=function(){
         if(imgs[i]!==im){ done(); return; }
-        if(im.naturalWidth>0){ ok[i]=true; loadedCount++; }
+        if(im.naturalWidth>0){ ok[i]=true; loadedCount++; while(ok[maxContig+1]) maxContig++; }
         if(i===1) draw(1,true);
         checkReady();
         if(!allReady && Math.abs(lutPos(cur)-i)<1) draw(lutPos(cur),true);
@@ -969,23 +987,22 @@ function initMotor(cfg){
     if(started) return; started=true;
     gen++; var myGen=gen;
     if(reduced){ load(N); want=1; cur=1; return; }
-    /* ORDEN CB1: el arnés (cfg.loadOrder:'edges') pide primero AMBOS extremos (1,N,2,N-1,...)
-       en vez de 1..N en orden — bajo red/CPU lenta medido con Playwright (CPU 4x + Fast4G +
-       flick continuo) el orden 1..N dejaba el frame 148 (explode abierto) sin llegar nunca
-       a tiempo: a los 10s solo 17/148 cargados, siempre el más cercano a 1 (cerrado). Pedir
-       ambos extremos desde el primer lote de 10 asegura que el cuadro cerrado Y el abierto
-       estén listos casi de inmediato sin importar qué tan lento vaya el resto. */
-    var order=[];
-    if(cfg.loadOrder==='edges'){
-      var lo=1, hi=N, flip=true;
-      while(lo<=hi){ if(flip) order.push(lo++); else order.push(hi--); flip=!flip; }
-    } else { for(var k=1;k<=N;k++) order.push(k); }
+    /* ORDEN CB2 (revierte CB1's loadOrder:'edges'): pedir primero ambos extremos dejaba el
+       frame mostrado saltar entre lo cargado cerca de 1 y lo cargado cerca de N apenas
+       gracefulDegrade usaba nearestLoaded() con la posición real de scroll — eso era el
+       "bugueado" que reportó Esteban. Vuelve a 1..N estrictamente secuencial, igual que
+       #despiece/motos: así la frontera contigua (maxContig, ver draw()) sólo puede avanzar
+       hacia adelante, nunca salta. */
+    var order=[]; for(var k=1;k<=N;k++) order.push(k);
     var oi=0;
     motorChunkRegister(function(){
       if(!started || gen!==myGen) return false;
       var end=Math.min(order.length-1,oi+9);
       for(; oi<=end; oi++) load(order[oi]);
       return oi<order.length;
+    }, function(){
+      var r=stage.getBoundingClientRect();
+      return Math.abs(r.top+r.height/2-window.innerHeight/2);
     });
     setTimeout(function(){
       if(gen!==myGen || allReady) return;
@@ -1028,7 +1045,7 @@ function initMotor(cfg){
     gen++;
     window.removeEventListener('scroll',tick);
     window.removeEventListener('resize',onResize);
-    imgs=[]; ok=[]; requested=[]; loadedCount=0; allReady=false; started=false; running=false; want=0; cur=0;
+    imgs=[]; ok=[]; requested=[]; loadedCount=0; allReady=false; started=false; running=false; want=0; cur=0; maxContig=0;
   }
   sizeCanvas();
   draw(1,true);
@@ -1047,14 +1064,16 @@ function initMotor(cfg){
 }
 initMotor({stage:'dp-stage',canvas:'dp-canvas',n:148,lut:LUT_DESPIECE,
   dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
-/* ORDEN CB1 (OK-ESTEBAN:2026-10-12, autorizado a tocar el mapeo de #escena-motor): además
-   de loadOrder:'edges' (ver startLoad), gracefulDegrade:true deja de forzar el cuadro 1
-   (cerrado) mientras !allReady — usa nearestLoaded() con la posición real de scroll, así
-   el arnés avanza con lo que ya cargó en vez de quedarse pegado al cerrado hasta el 90%/4s.
-   #despiece NO lleva estos flags: su comportamiento queda byte a byte igual que antes. */
+/* ORDEN CB2 (OK-ESTEBAN:2026-10-12, autorizado a tocar el mapeo de #escena-motor, reemplaza
+   el flag de CB1): gracefulDegrade:true deja de forzar el cuadro 1 (cerrado) mientras
+   !allReady, pero ya NO usa nearestLoaded() con la posición real de scroll (eso saltaba
+   entre lo cargado cerca de 1 y lo cargado cerca de 148 — el "bugueado" de CB2) — ahora
+   tapa la posición a la frontera contigua ya cargada desde el frame 1 (maxContig en draw()),
+   así el arnés avanza progresivo sin saltos ni retrocesos en vez de quedarse pegado al
+   cerrado hasta el 90%/4s. #despiece NO lleva este flag: su comportamiento queda igual. */
 initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:148,lut:LUT_ARNES,
   dirMob:'img/arnes-frames/mob/',dirDesk:'img/arnes-frames/desk/',
-  loadOrder:'edges',gracefulDegrade:true});
+  gracefulDegrade:true});
 </script>
 </body>
 </html>
