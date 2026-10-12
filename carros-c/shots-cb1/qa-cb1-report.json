@@ -1,0 +1,169 @@
+{
+  "points": {
+    "despiece": [
+      {
+        "label": "asomando",
+        "p": 0,
+        "scrollY": 1027,
+        "cssRect": {
+          "w": 382,
+          "h": 254.65625
+        },
+        "bbox": {
+          "wPct": 97.1,
+          "hPct": 99.5,
+          "pxW": 1113,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-despiece-asomando.png"
+      },
+      {
+        "label": "p25",
+        "p": 0.25,
+        "scrollY": 1190,
+        "cssRect": {
+          "w": 382,
+          "h": 254.65625
+        },
+        "bbox": {
+          "wPct": 98.7,
+          "hPct": 99.5,
+          "pxW": 1131,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-despiece-p25.png"
+      },
+      {
+        "label": "p50",
+        "p": 0.5,
+        "scrollY": 1353,
+        "cssRect": {
+          "w": 382,
+          "h": 254.65625
+        },
+        "bbox": {
+          "wPct": 99.9,
+          "hPct": 99.5,
+          "pxW": 1145,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-despiece-p50.png"
+      },
+      {
+        "label": "p75",
+        "p": 0.75,
+        "scrollY": 1515,
+        "cssRect": {
+          "w": 382,
+          "h": 254.65625
+        },
+        "bbox": {
+          "wPct": 99.9,
+          "hPct": 99.5,
+          "pxW": 1145,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-despiece-p75.png"
+      },
+      {
+        "label": "saliendo",
+        "p": 1.25,
+        "scrollY": 1841,
+        "cssRect": {
+          "w": 382,
+          "h": 254.65625
+        },
+        "bbox": {
+          "wPct": 99.9,
+          "hPct": 99.5,
+          "pxW": 1145,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-despiece-saliendo.png"
+      }
+    ],
+    "arnes": [
+      {
+        "label": "asomando",
+        "p": 0,
+        "scrollY": 2757,
+        "cssRect": {
+          "w": 382,
+          "h": 186.75
+        },
+        "bbox": {
+          "wPct": 98.9,
+          "hPct": 86.6,
+          "pxW": 1133,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-arnes-asomando.png"
+      },
+      {
+        "label": "p25",
+        "p": 0.25,
+        "scrollY": 2911,
+        "cssRect": {
+          "w": 382,
+          "h": 186.75
+        },
+        "bbox": {
+          "wPct": 99.2,
+          "hPct": 86.6,
+          "pxW": 1137,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-arnes-p25.png"
+      },
+      {
+        "label": "p50",
+        "p": 0.5,
+        "scrollY": 3066,
+        "cssRect": {
+          "w": 382,
+          "h": 186.75
+        },
+        "bbox": {
+          "wPct": 99.7,
+          "hPct": 87.3,
+          "pxW": 1143,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-arnes-p50.png"
+      },
+      {
+        "label": "p75",
+        "p": 0.75,
+        "scrollY": 3220,
+        "cssRect": {
+          "w": 382,
+          "h": 186.75
+        },
+        "bbox": {
+          "wPct": 99.4,
+          "hPct": 89.1,
+          "pxW": 1139,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-arnes-p75.png"
+      },
+      {
+        "label": "saliendo",
+        "p": 1.25,
+        "scrollY": 3528,
+        "cssRect": {
+          "w": 382,
+          "h": 186.75
+        },
+        "bbox": {
+          "wPct": 99.4,
+          "hPct": 90.4,
+          "pxW": 1139,
+          "pngW": 1146
+        },
+        "shot": "/opt/dispatch/projects/taller/ca12-work/carros/carros-c/shots-cb1/390-arnes-saliendo.png"
+      }
+    ]
+  },
+  "errors": []
+}
