@@ -877,6 +877,7 @@ var LUT_DESPIECE=[1.0,5.97,7.666,8.903,11.592,12.145,12.462,12.779,13.149,13.641
       aunque el ROUND-ROBIN los repartiera parejo — la cantidad total en vuelo importaba, no
       el orden. Con las 2 capas (orden parejo + tope real de vuelo) no hay errores de consola
       y ambas escenas avanzan sin que una ahogue a la otra. */
+// OK-ESTEBAN:2026-10-12 CA12 traba
 var motorChunkRunners=[], motorChunkPumping=false;
 function motorChunkPump(){
   if(!motorChunkRunners.length){ motorChunkPumping=false; return; }
@@ -927,11 +928,11 @@ function initMotor(cfg){
     var dpr=Math.min(window.devicePixelRatio||1,2);
     var w=Math.max(1,Math.round(rect.width*dpr)), h=Math.max(1,Math.round(rect.height*dpr));
     if(w===W && h===H) return;
-    W=w; H=h; canvas.width=W; canvas.height=H; drawnPos=-1; draw(allReady?lutPos(cur):1,true);
+    W=w; H=h; canvas.width=W; canvas.height=H; drawnPos=-1; draw(lutPos(cur),true);
   }
   function draw(pos,force){
     if(!imgs.length || !W || !H) return;
-    if(!allReady) pos=1;
+    if(!allReady && !cfg.gracefulDegrade) pos=1;
     if(!force && Math.abs(pos-drawnPos)<0.01) return;
     var i0=Math.floor(pos), frac=pos-i0, i1=i0+1;
     if(i0<1){ i0=1; i1=1; frac=0; } if(i1>N){ i1=N; if(i0>N) i0=N; }
@@ -958,7 +959,7 @@ function initMotor(cfg){
         if(im.naturalWidth>0){ ok[i]=true; loadedCount++; }
         if(i===1) draw(1,true);
         checkReady();
-        if(!allReady && Math.abs((allReady?lutPos(cur):1)-i)<1) draw(allReady?lutPos(cur):1,true);
+        if(!allReady && Math.abs(lutPos(cur)-i)<1) draw(lutPos(cur),true);
         done();
       };
       if(im.decode){ im.decode().then(mark, mark); } else { im.onload=mark; im.onerror=mark; }
@@ -968,12 +969,23 @@ function initMotor(cfg){
     if(started) return; started=true;
     gen++; var myGen=gen;
     if(reduced){ load(N); want=1; cur=1; return; }
-    var i=1;
+    /* ORDEN CB1: el arnés (cfg.loadOrder:'edges') pide primero AMBOS extremos (1,N,2,N-1,...)
+       en vez de 1..N en orden — bajo red/CPU lenta medido con Playwright (CPU 4x + Fast4G +
+       flick continuo) el orden 1..N dejaba el frame 148 (explode abierto) sin llegar nunca
+       a tiempo: a los 10s solo 17/148 cargados, siempre el más cercano a 1 (cerrado). Pedir
+       ambos extremos desde el primer lote de 10 asegura que el cuadro cerrado Y el abierto
+       estén listos casi de inmediato sin importar qué tan lento vaya el resto. */
+    var order=[];
+    if(cfg.loadOrder==='edges'){
+      var lo=1, hi=N, flip=true;
+      while(lo<=hi){ if(flip) order.push(lo++); else order.push(hi--); flip=!flip; }
+    } else { for(var k=1;k<=N;k++) order.push(k); }
+    var oi=0;
     motorChunkRegister(function(){
       if(!started || gen!==myGen) return false;
-      var end=Math.min(N,i+9);
-      for(; i<=end; i++) load(i);
-      return i<=N;
+      var end=Math.min(order.length-1,oi+9);
+      for(; oi<=end; oi++) load(order[oi]);
+      return oi<order.length;
     });
     setTimeout(function(){
       if(gen!==myGen || allReady) return;
@@ -1035,8 +1047,14 @@ function initMotor(cfg){
 }
 initMotor({stage:'dp-stage',canvas:'dp-canvas',n:148,lut:LUT_DESPIECE,
   dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
+/* ORDEN CB1 (OK-ESTEBAN:2026-10-12, autorizado a tocar el mapeo de #escena-motor): además
+   de loadOrder:'edges' (ver startLoad), gracefulDegrade:true deja de forzar el cuadro 1
+   (cerrado) mientras !allReady — usa nearestLoaded() con la posición real de scroll, así
+   el arnés avanza con lo que ya cargó en vez de quedarse pegado al cerrado hasta el 90%/4s.
+   #despiece NO lleva estos flags: su comportamiento queda byte a byte igual que antes. */
 initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:148,lut:LUT_ARNES,
-  dirMob:'img/arnes-frames/mob/',dirDesk:'img/arnes-frames/desk/'});
+  dirMob:'img/arnes-frames/mob/',dirDesk:'img/arnes-frames/desk/',
+  loadOrder:'edges',gracefulDegrade:true});
 </script>
 </body>
 </html>
