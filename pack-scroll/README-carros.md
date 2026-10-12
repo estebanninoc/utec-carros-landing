@@ -10,11 +10,16 @@ exactamente qué archivos espera cada una.
 ## 1) Despiece grande (`#despiece`, `<canvas id="dp-canvas">`) — LIVE desde ORDEN CA2
 
 - Ya NO es placeholder: usa el despiece real del motor (Higgsfield minimax_h3_max,
-  `carro-motor-despiece.mp4` en `/opt/guardian-shared/fabrica/carros-c/vid-hf/`), 145 cuadros
-  interpolados (ffmpeg `minterpolate`) y remuestreados por longitud de arco (`LUT_DESPIECE`
-  en el `<script>`, mismo método que `LUT_MOTOR` documentaba para motos).
-- Frames en `pack-scroll/img/dp-frames/desk/` (800×533, 145 archivos, ~8.2MB) y
-  `pack-scroll/img/dp-frames/mob/` (440×293, 145 archivos, ~3.3MB), `f_001.webp`...`f_145.webp`.
+  `carro-motor-despiece.mp4` en `/opt/guardian-shared/fabrica/carros-c/vid-hf/`), originalmente
+  145 cuadros interpolados (ffmpeg `minterpolate`) y remuestreados por longitud de arco
+  (`LUT_DESPIECE` en el `<script>`, mismo método que `LUT_MOTOR` documentaba para motos).
+  ORDEN CA7 (perf) los bajó a 110 cuadros (subsample por índice viejo, LUT re-escalada al
+  nuevo rango 1..110 preservando el mismo ritmo) para entrar en presupuesto de peso.
+- Frames en `pack-scroll/img/dp-frames/desk/` (800×533, 110 archivos, ~3.1MB) y
+  `pack-scroll/img/dp-frames/mob/` (440×293, 110 archivos, ~1.3MB), `f_001.webp`...`f_110.webp`,
+  re-encodeados a libwebp q=20 (ffmpeg `-c:v libwebp`). CA7 también quitó el `preloadAll()`
+  de `initMotor()`: ahora carga por `IntersectionObserver` (keyframes cada 8 + relleno con
+  `requestIdleCallback`), ver comentario ORDEN CA7 junto a `initMotor` en `index.html`.
 - Usa `initMotor()` (NO `initEscena()`): sin pin/sticky, igual que `#escena-motor` en motos
   (AY6-AY9 + AZ2/AZ3/AZ5) — `initEscena()` se quitó del script por quedar sin uso.
 - CSS: `.dp-stage{max-width:900px}`, `.dp-stage canvas{aspect-ratio:1152/768}` (video horizontal;
