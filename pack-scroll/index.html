@@ -347,7 +347,7 @@
   .dp{padding:70px 0 40px;text-align:center;overflow:hidden}
   .dp .lead{margin-left:auto;margin-right:auto}
   .dp-stage{position:relative;max-width:900px;margin:26px auto 0}
-  .dp-stage canvas{display:block;width:100%;height:auto;aspect-ratio:1152/768}
+  .dp-stage canvas{display:block;width:100%;height:auto;aspect-ratio:1080/720}
   .dp-bar{max-width:280px;height:3px;border-radius:99px;background:#1c1c21;margin:18px auto 0;overflow:hidden}
   .dp-bar i{display:block;height:100%;width:calc(var(--t,0)*100%);background:var(--acc)}
   .dp-piezas{list-style:none;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px auto 0;max-width:640px;padding:0 20px}
@@ -405,7 +405,7 @@
      aspect-ratio, sin tope de vh) para que en móvil el stage sea horizontal de borde a borde,
      igual que el motor grande — fondo negro de página = negro del frame, sin caja/recuadro. */
   #scr-motor-stage{max-width:900px;margin:0 auto}
-  #scr-motor-stage canvas{display:block;width:100%;height:auto;max-width:100%;max-height:none;aspect-ratio:900/440}
+  #scr-motor-stage canvas{display:block;width:100%;height:auto;max-width:100%;max-height:none;aspect-ratio:1080/528}
   @media(max-width:820px){#scr-motor-stage{width:100%;padding:0 4px}}
   /* GALERÍA con video local */
   .fx video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
@@ -554,12 +554,12 @@ document.addEventListener('click',function(ev){
     <h2 class="title">Tu carro, pieza por pieza</h2>
     <p class="lead">Baja y mira cómo se abre. <b>Así de claro</b> te lo muestra el manual de tu carro: cada pieza, el orden de armado y el torque de cada tornillo.</p>
   </div>
-  <!-- ORDEN CA2: despiece real del motor (Higgsfield minimax_h3_max, carro-motor-despiece.mp4)
-       como scroll-scrub sin pin/sticky — mismo mecanismo initMotor() ya probado en motos para
-       #escena-motor (AY6-AY9 + AZ2/AZ3/AZ5): LUT por longitud de arco, canvas a
-       devicePixelRatio (tope 2), decode() robusto, allReady a 90%/4s. -->
+  <!-- ORDEN CA2 (actualizado CA12): despiece real del motor (Higgsfield minimax_h3_max,
+       carro-motor-despiece.mp4) como scroll-scrub sin pin/sticky — mecanismo initMotor(),
+       ver nota CA12 junto a la función: LUT por longitud de arco, canvas a devicePixelRatio
+       (tope 2), decode() robusto, precarga COMPLETA (no a cuentagotas) al acercarse. -->
   <div class="dp-stage" id="dp-stage">
-    <canvas id="dp-canvas" width="800" height="533" role="img" aria-label="Motor de un carro que se abre en despiece mientras bajas: tapa de válvulas, culata, cilindro, pistón, biela, cigüeñal, alternador, batería, radiador y faros por separado."></canvas>
+    <canvas id="dp-canvas" width="1080" height="720" role="img" aria-label="Motor de un carro que se abre en despiece mientras bajas: tapa de válvulas, culata, cilindro, pistón, biela, cigüeñal, alternador, batería, radiador y faros por separado."></canvas>
   </div>
   <ul class="dp-piezas">
     <li>Motor</li><li>Transmisión</li><li>Suspensión</li><li>Frenos</li><li>Dirección</li><li>Sistema eléctrico</li><li>Refrigeración</li><li>Escape</li>
@@ -614,11 +614,12 @@ document.addEventListener('click',function(ev){
   </div>
 </section>
 
-<!-- ORDEN CA10: arnés eléctrico (carro rayos X) real, mismo scroll-scrub initMotor() que
-     #despiece — ver LUT_ARNES + segunda llamada initMotor() al final del <script>. -->
+<!-- ORDEN CA10 (actualizado CA12): arnés eléctrico (carro rayos X) real, mismo scroll-scrub
+     initMotor() que #despiece — ver LUT_ARNES + segunda llamada initMotor() al final del
+     <script>. -->
 <section class="dp dp-mini" id="escena-motor">
   <div class="dp-stage-mini" id="scr-motor-stage">
-    <canvas id="scr-motor-canvas" width="900" height="440" role="img" aria-label="Arnés eléctrico de un carro en rayos X que se abre mientras bajas: arnés principal, conectores, caja de fusibles, computadora (ECU), relés, sensores, tierras y luces por separado."></canvas>
+    <canvas id="scr-motor-canvas" width="1080" height="528" role="img" aria-label="Arnés eléctrico de un carro en rayos X que se abre mientras bajas: arnés principal, conectores, caja de fusibles, computadora (ECU), relés, sensores, tierras y luces por separado."></canvas>
   </div>
   <ul class="dp-piezas"><li>Arnés principal</li><li>Conectores</li><li>Caja de fusibles</li><li>Computadora (ECU)</li><li>Relés</li><li>Sensores</li><li>Tierras</li><li>Luces</li></ul>
 </section>
@@ -838,82 +839,58 @@ document.addEventListener('click',function(ev){
   });
 })();
 
-/* ORDEN CA2: #despiece/dp-canvas pasa de placeholder a la animación real del motor (Higgsfield
-   minimax_h3_max, carro-motor-despiece.mp4: arranca armado con capó abierto y termina en
-   despiece sobre negro). Usa initMotor() — el MISMO mecanismo ya probado en motos para
-   #escena-motor (AY6-AY9 + AZ2/AZ3/AZ5), sin pin/sticky: LUT por longitud de arco (145 cuadros
-   interpolados con minterpolate y remuestreados por diff perceptual, mismo método que
-   LUT_MOTOR), canvas a devicePixelRatio (tope 2), decode() que cuenta el resolve y el reject
-   por igual.
-   ORDEN CA7: ya no hay preloadAll — carga diferida por IntersectionObserver (rootMargin
-   50% viewport, ~1.5 pantallas de anticipación sumando el viewport actual) que dispara
-   keyframes al acercarse la sección (cada 4º frame desde ORDEN CA11, ver abajo); el resto
-   se completa en segundo plano con requestIdleCallback. draw() nunca deja el canvas vacío:
-   si el frame exacto no está listo usa el más cercano ya cargado (nearestLoaded); antes de
-   que la sección entre en el margen del observer se fuerza el frame 1 (fallback AZ5).
-   #escena-motor (arnés eléctrico) pasó de placeholder a real en ORDEN CA10, ver comentario
-   junto a LUT_ARNES más abajo.
-   ORDEN CA10 (fix, 2 escenas a la vez): con #despiece + #escena-motor activas juntas,
-   loadKeyframes() dispara ~14-15 Image() de golpe POR escena (a propósito, sin cola, para
-   tener algo que mostrar en cualquier punto del scrub cuanto antes) — entre las 2 son ~29
-   decode() simultáneos, y en pruebas con Playwright bajo carga de memoria eso puede tirar
-   ERR_INSUFFICIENT_RESOURCES (#despiece solo no lo disparaba). motorLoadEnqueue() (cola
-   global compartida entre TODAS las instancias de initMotor, ver justo antes de la función)
-   limita a MOTOR_LOAD_MAX descargas/decode() en vuelo entre las 2 escenas. Además, antes
-   "decode() que cuenta el resolve y el reject por igual" marcaba ok[i]=true aunque la carga
-   fallara — con una imagen rota de verdad eso hacía tirar drawImage() ("broken state") sin
-   capturar. mark() ahora solo marca ok[i]=true si im.naturalWidth>0 (carga real); si falla,
-   nearestLoaded() sigue mostrando el cuadro más cercano ya cargado, sin reventar draw(). */
-/* ORDEN CA11: CA7 había bajado los frames de #despiece/#escena-motor a q=20 webp (mob
-   440/495px, desk 800/900px) para pesar menos, pero a esa resolución mob se estira ~2.6x
-   en celulares DPR3 (390px) y q=20 deja bloques visibles — "se ve muy GIF" (feedback real).
-   Se re-extrajeron los MISMOS 110/115 frames de cada escena (mismo índice nativo del .mp4
-   por cada f_NNN, matcheado por MSE contra el frame actual para no tocar recorte/ritmo/LUT)
-   a mayor resolución y calidad: despiece mob 660x440/desk 1024x683, arnés mob 700x342/desk
-   1100x538, libwebp q40 (mob) / q55 (desk), método 6, sin -preset. El origen es video
-   generado por IA con grano fino que no baja de peso aunque subas la calidad (medido: subir
-   de q40/55 a q82-85 casi duplica el peso sin mejora visible perceptible) — se priorizó
-   nitidez real dentro de un presupuesto similar al pedido (~3.5-3.7MB mob / ~7.6-7.7MB desk
-   por escena) en vez de forzar q82-85 literal. loadKeyframes() pasa de cada 8º a cada 4º
-   frame (KEY=4, ver initMotor) para que el scrub ya tenga algo fluido antes de que termine
-   fillRestIdle(); nunca canvas vacío (igual que antes). */
-/* ORDEN CA10: #escena-motor/scr-motor-canvas pasa de placeholder a la animación real del
-   arnés eléctrico (Higgsfield minimax_h3_max, carro-arnes-rayosx.mp4: 124 cuadros nativos
-   24fps; el tramo final 105-124 queda casi estático con los conectores ya flotando, así
-   que se queda a la mitad por muestreo — 104 cuadros completos + 11 del tramo final — en
-   vez de los 124 íntegros, sin perder el leve flote. LUT_ARNES por longitud de arco igual
-   método que LUT_DESPIECE, medida sobre ESTA secuencia de 115 cuadros (no reusa LUT_DESPIECE,
-   es propia de la cadencia de este video). Sin bbox-crop: el contenido toca casi todos los
-   bordes en algún punto de la secuencia (los conectores llegan al borde derecho en el final),
-   igual que #despiece — recortar se habría comido piezas reales. */
-var LUT_ARNES=[1.0,1.247,1.493,1.74,1.987,2.15,2.309,2.469,2.628,2.787,2.946,3.136,3.344,3.551,3.758,3.966,4.122,4.269,4.416,4.562,4.709,4.856,5.004,5.219,5.434,5.649,5.865,6.069,6.256,6.443,6.629,6.816,7.004,7.294,7.585,7.875,8.139,8.382,8.626,8.869,9.166,9.525,9.884,10.211,10.523,10.835,11.233,11.726,12.18,12.586,12.992,13.66,14.256,14.774,15.541,16.374,17.162,18.37,19.646,21.619,26.594,29.76,30.901,31.987,32.687,33.383,34.051,34.485,34.919,35.375,35.836,36.226,36.578,36.929,37.338,37.762,38.133,38.436,38.74,39.057,39.46,39.862,40.207,40.522,40.838,41.225,41.689,42.124,42.497,42.871,43.329,43.833,44.271,44.675,45.115,45.693,46.216,46.676,47.193,47.844,48.34,48.788,49.437,50.171,50.698,51.323,52.065,52.67,53.346,54.088,54.708,55.476,56.265,56.9,57.672,58.416,59.164,60.087,60.812,61.72,62.554,63.442,64.38,65.25,66.217,67.09,68.205,69.062,70.2,71.195,72.367,73.554,74.621,75.86,76.995,78.426,79.987,81.361,82.893,84.615,86.432,88.414,90.601,93.055,96.003,99.256,102.813,106.25,109.783,115.0];
-var LUT_DESPIECE=[1.0,3.621,5.079,5.968,6.76,8.145,8.856,9.309,9.61,9.905,10.226,10.59,10.942,11.27,11.609,12.523,12.835,13.138,13.378,13.618,13.857,14.193,14.534,14.823,15.091,15.361,15.62,15.879,16.138,16.431,16.723,17.022,17.33,17.638,17.962,18.286,18.609,18.931,19.244,19.533,19.821,20.098,20.368,20.637,20.929,21.224,21.533,21.877,22.223,22.59,22.955,23.238,23.521,23.791,24.033,24.276,25.034,25.539,25.882,26.248,26.623,26.937,27.224,27.513,27.828,28.143,28.569,29.377,30.105,30.485,30.787,31.082,31.41,31.807,32.284,32.867,33.449,34.46,34.757,35.056,35.551,36.093,36.709,37.418,38.073,38.684,39.248,39.807,40.394,41.073,41.752,42.523,43.247,43.867,44.47,45.023,45.439,46.214,47.287,47.966,48.578,49.013,49.409,49.983,51.171,51.895,52.419,52.881,53.362,53.93,54.493,55.635,56.179,56.732,57.367,58.037,58.649,59.27,59.915,60.636,61.586,62.342,63.082,63.78,64.522,65.352,66.205,66.984,67.756,69.064,69.966,70.715,72.081,73.67,74.474,76.038,77.84,79.279,81.369,83.596,86.541,90.509,94.8,102.362,110.0];
-/* ORDEN CA10: con 2 escenas initMotor() activas (#despiece + #escena-motor), cada una
-   dispara ~14 Image() de golpe en loadKeyframes() (sin cola, por diseño, para tener algo
-   que mostrar en cualquier punto del scrub cuanto antes) — entre las 2 son ~29 decode()
-   simultáneos y Chromium tira ERR_INSUFFICIENT_RESOURCES (confirmado con Playwright:
-   #despiece solo no lo disparaba). Cola global compartida entre TODAS las instancias de
-   initMotor (viven en el mismo <script>) que limita a MOTOR_LOAD_MAX descargas/decode()
-   en vuelo a la vez, sin importar cuántas escenas pidan frames al mismo tiempo. */
-var MOTOR_LOAD_MAX=4, motorLoadQ=[], motorLoadActive=0;
-function motorLoadNext(){
-  while(motorLoadActive<MOTOR_LOAD_MAX && motorLoadQ.length){
-    var job=motorLoadQ.shift(); motorLoadActive++; job();
-  }
+/* ORDEN CA12 (Esteban: "está súper glitchado... hagámoslo fluido como en motos"):
+   causa real de la traba, medida con Playwright (CPU 4x + Fast4G + scroll continuo, antes
+   de este fix): la carga por keyframes (cada 4º frame) + requestIdleCallback para el resto
+   (CA7/CA10/CA11) depende de tiempo IDLE del hilo principal, y durante un scroll activo con
+   CPU limitada casi no hay idle — medido: de 110-115 frames por escena, solo 1-9 llegaban a
+   cargar en toda la pasada de scroll. draw() entonces mostraba nearestLoaded() con el frame
+   más cercano, a veces lejos del real → el salto/traba que describe Esteban. En motos,
+   initMotor() precarga TODOS los frames de una apenas la escena entra en viewport+1.5
+   pantallas (sin cuentagotas), así que para cuando el scroll llega ya está el 100% listo
+   (medido igual: 71/71 y 137/137). Fix: se porta ese mecanismo — precarga COMPLETA (en
+   tandas de 10 cada 60ms, igual que el despiece grande de motos, para no disparar ~250
+   decode() de golpe entre las 2 escenas) disparada por IntersectionObserver con margen de
+   1.5 viewports (antes 50%, mucho más tarde), con allReady a 90%/4s (AZ5: nunca esperar el
+   100% para siempre) y liberación de memoria a 3 viewports de distancia (igual que motos).
+   LUT por longitud de arco (igual método que antes, recalculada para los frames nuevos),
+   canvas a devicePixelRatio (tope 2), decode() que cuenta resolve/reject igual y solo marca
+   ok[i] con im.naturalWidth>0 (ver CA10), nearestLoaded() como red de seguridad final.
+   Frames regenerados desde cero (carros-c/vid-hf/*.mp4, no desde los webp ya degradados):
+   148 cuadros por escena (antes 110/115), remuestreados por fps hacia densidad pareja igual
+   que motos; resolución/calidad iguales en mob y desk: despiece 600x400(mob)/1080x720(desk),
+   arnés 630x308(mob)/1080x528(desk), libwebp q82 método 6 (el mismo techo de calidad visible
+   que ya había identificado CA11 para este material con grano de IA). */
+var LUT_ARNES=[1.0,1.287,1.575,1.862,2.097,2.283,2.469,2.655,2.84,4.035,4.279,4.523,4.767,5.008,5.179,5.35,5.521,5.693,5.864,6.051,6.301,6.552,6.802,7.046,7.266,7.487,7.707,7.928,8.226,8.562,8.898,10.203,10.493,10.784,11.106,11.521,11.935,12.306,12.668,13.048,13.617,14.154,14.626,16.161,16.939,17.559,18.304,19.321,20.298,21.642,24.231,26.854,32.844,36.097,37.298,38.324,39.09,39.888,41.416,41.899,42.426,42.964,43.379,43.784,44.229,44.719,45.145,45.486,45.826,47.229,47.696,48.127,48.49,48.853,49.31,49.829,50.292,50.728,51.215,51.79,53.289,53.744,54.286,54.941,55.493,56.047,56.79,57.365,57.874,58.677,60.39,60.998,61.861,62.585,63.346,64.164,64.864,66.782,67.561,68.35,69.213,70.002,72.029,72.834,73.848,74.747,75.802,76.773,78.826,79.778,80.984,81.905,84.106,85.214,86.497,87.859,88.911,91.301,92.637,94.091,95.653,98.238,99.917,101.624,104.498,106.597,109.731,112.213,115.889,118.804,122.62,125.657,129.74,134.438,138.564,142.924,148.0];
+var LUT_DESPIECE=[1.0,5.97,7.666,8.903,11.592,12.145,12.462,12.779,13.149,13.641,14.111,14.519,14.928,17.103,17.296,17.489,17.682,17.875,18.115,18.443,18.771,19.094,19.405,19.717,20.027,20.328,20.629,20.931,21.223,21.513,21.803,23.093,23.381,23.67,23.958,24.242,24.525,24.808,25.093,25.38,25.667,25.955,26.237,26.518,26.799,27.081,27.366,27.65,27.934,29.233,29.536,29.839,30.144,30.451,30.758,31.037,31.212,31.386,31.561,31.735,31.91,33.091,33.439,33.787,35.14,35.5,35.86,36.126,36.334,36.541,36.748,36.955,37.33,37.75,39.11,39.551,39.992,41.253,41.51,41.768,42.047,42.524,43.001,43.494,43.987,45.241,45.544,45.848,47.292,47.878,48.498,49.138,49.825,50.522,51.231,51.96,53.732,54.541,55.355,56.164,57.023,57.845,58.709,60.326,60.814,62.372,63.296,64.097,64.616,66.253,68.017,68.983,69.527,70.124,72.169,74.014,74.622,75.424,76.541,78.718,79.938,81.258,82.589,85.05,86.684,88.173,91.051,93.006,94.668,98.572,101.563,105.77,111.457,118.767,128.015,137.704,148.0];
+/* ORDEN CA12 (fix tras medir en local): con #despiece + #escena-motor cargando completo a
+   la vez (las 2 pueden entrar en el margen de 1.5 viewports casi juntas si el usuario baja
+   rápido), dejar que cada una dispare su propia cadena de tandas de 10/60ms sin coordinarse
+   hace que la que arrancó primero monopolice la conexión/decode bajo Fast4G+CPU4x — medido:
+   despiece terminaba sus 148 cuadros mientras arnés apenas sumaba 6. motorChunkPump() alterna
+   UNA tanda de 10 por escena activa cada 60ms (round-robin, no un tope de concurrencia como
+   el motorLoadEnqueue() de CA10 que serializaba todo): ambas avanzan en paralelo de forma
+   pareja en vez de que una se coma el ancho de banda entero de la otra. */
+var motorChunkRunners=[], motorChunkPumping=false;
+function motorChunkPump(){
+  if(!motorChunkRunners.length){ motorChunkPumping=false; return; }
+  var r=motorChunkRunners.shift();
+  if(r()) motorChunkRunners.push(r);
+  setTimeout(motorChunkPump,60);
 }
-function motorLoadEnqueue(run){
-  motorLoadQ.push(function(){ run(function(){ motorLoadActive--; motorLoadNext(); }); });
-  motorLoadNext();
+function motorChunkRegister(fn){
+  motorChunkRunners.push(fn);
+  if(!motorChunkPumping){ motorChunkPumping=true; motorChunkPump(); }
 }
 function initMotor(cfg){
   var stage=document.getElementById(cfg.stage), canvas=document.getElementById(cfg.canvas);
   if(!stage||!canvas) return;
-  var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut, KEY=4;
+  var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut;
   var dir = window.matchMedia('(max-width:720px)').matches ? cfg.dirMob : cfg.dirDesk;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var imgs=[], ok=[], queued=[], started=false, want=0, cur=0, drawnPos=-1, running=false;
+  var imgs=[], ok=[], loadedCount=0, allReady=false, started=false, want=0, cur=0, drawnPos=-1, running=false, gen=0;
   var W=0, H=0, lastWidth=window.innerWidth;
-  var idleFn = window.requestIdleCallback || function(fn){ setTimeout(fn,60); };
+  var READY_FRAC=0.9, READY_TIMEOUT_MS=4000;
   function src(i){ return dir+'f_'+String(i).padStart(3,'0')+'.webp'; }
   function lutPos(p){
     var x=Math.max(0,Math.min(1,p))*(LUT.length-1), i0=Math.floor(x), frac=x-i0;
@@ -921,7 +898,8 @@ function initMotor(cfg){
     return LUT[i0]*(1-frac)+LUT[i0+1]*frac;
   }
   function nearestLoaded(i){
-    for(var d=0; d<=N; d++){
+    if(ok[i]) return i;
+    for(var d=1; d<N; d++){
       if(i-d>=1 && ok[i-d]) return i-d;
       if(i+d<=N && ok[i+d]) return i+d;
     }
@@ -933,11 +911,11 @@ function initMotor(cfg){
     var dpr=Math.min(window.devicePixelRatio||1,2);
     var w=Math.max(1,Math.round(rect.width*dpr)), h=Math.max(1,Math.round(rect.height*dpr));
     if(w===W && h===H) return;
-    W=w; H=h; canvas.width=W; canvas.height=H; drawnPos=-1; draw(lutPos(cur),true);
+    W=w; H=h; canvas.width=W; canvas.height=H; drawnPos=-1; draw(allReady?lutPos(cur):1,true);
   }
   function draw(pos,force){
     if(!imgs.length || !W || !H) return;
-    if(!started) pos=1;
+    if(!allReady) pos=1;
     if(!force && Math.abs(pos-drawnPos)<0.01) return;
     var i0=Math.floor(pos), frac=pos-i0, i1=i0+1;
     if(i0<1){ i0=1; i1=1; frac=0; } if(i1>N){ i1=N; if(i0>N) i0=N; }
@@ -950,42 +928,40 @@ function initMotor(cfg){
     ctx.drawImage(imgs[i0],0,0,W,H);
     if(i1!==i0 && frac>0.004 && imgs[i1] && ok[i1]){ ctx.globalAlpha=frac; ctx.drawImage(imgs[i1],0,0,W,H); ctx.globalAlpha=1; }
   }
-  function load(i,cb){
-    if(imgs[i]||queued[i]){ if(cb) cb(); return; }
-    queued[i]=true;
-    motorLoadEnqueue(function(done){
-      var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
-      var mark=function(){
-        if(imgs[i]===im && im.naturalWidth>0) ok[i]=true;
-        draw(started?lutPos(cur):1,true);
-        if(cb) cb();
-        done();
-      };
-      if(im.decode){ im.decode().then(mark, mark); } else { im.onload=mark; im.onerror=mark; }
+  function checkReady(){
+    if(allReady) return;
+    if(loadedCount>=Math.ceil(N*READY_FRAC)){ allReady=true; draw(lutPos(cur),true); }
+  }
+  function load(i){
+    if(imgs[i]) return;
+    var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
+    var mark=function(){
+      if(imgs[i]!==im) return;
+      if(im.naturalWidth>0){ ok[i]=true; loadedCount++; }
+      if(i===1) draw(1,true);
+      checkReady();
+      if(!allReady && Math.abs((allReady?lutPos(cur):1)-i)<1) draw(allReady?lutPos(cur):1,true);
+    };
+    if(im.decode){ im.decode().then(mark, mark); } else { im.onload=mark; im.onerror=mark; }
+  }
+  function startLoad(){
+    if(started) return; started=true;
+    gen++; var myGen=gen;
+    if(reduced){ load(N); want=1; cur=1; return; }
+    var i=1;
+    motorChunkRegister(function(){
+      if(!started || gen!==myGen) return false;
+      var end=Math.min(N,i+9);
+      for(; i<=end; i++) load(i);
+      return i<=N;
     });
-  }
-  function loadKeyframes(){
-    for(var i=1;i<=N;i+=KEY) load(i);
-    load(N);
-  }
-  function fillRestIdle(){
-    var idx=1;
-    function step(){
-      while(idx<=N && ok[idx]) idx++;
-      if(idx>N) return;
-      var i=idx; idx++;
-      load(i,function(){ idleFn(step,{timeout:500}); });
-    }
-    idleFn(step,{timeout:500});
-  }
-  function startLoading(){
-    if(started) return;
-    started=true;
-    loadKeyframes();
-    fillRestIdle();
-    tick();
+    setTimeout(function(){
+      if(gen!==myGen || allReady) return;
+      if(started){ allReady=true; draw(lutPos(cur),true); }
+    }, READY_TIMEOUT_MS);
   }
   function anim(){
+    if(!started){ running=false; return; }
     var d=want-cur;
     if(Math.abs(d)<0.0015){ cur=want; draw(lutPos(cur),false); running=false; return; }
     cur+=d*0.14;
@@ -1008,23 +984,38 @@ function initMotor(cfg){
     sizeCanvas();
     tick();
   }
+  function activar(){
+    startLoad();
+    if(reduced) return;
+    window.addEventListener('scroll',tick,{passive:true});
+    window.addEventListener('resize',onResize);
+    tick();
+  }
+  function liberar(){
+    if(!started) return;
+    gen++;
+    window.removeEventListener('scroll',tick);
+    window.removeEventListener('resize',onResize);
+    imgs=[]; ok=[]; loadedCount=0; allReady=false; started=false; running=false; want=0; cur=0;
+  }
   sizeCanvas();
-  load(1);
   draw(1,true);
-  if(reduced){ want=1; cur=1; return; }
   if('IntersectionObserver' in window){
+    var lead=Math.round(window.innerHeight*1.5)+'px';
     var io=new IntersectionObserver(function(es){
-      if(es[0].isIntersecting){ startLoading(); io.disconnect(); }
-    },{rootMargin:'0px 0px 50% 0px'});
+      es.forEach(function(e){ if(e.isIntersecting && !started) activar(); });
+    },{rootMargin:lead+' 0px '+lead+' 0px'});
     io.observe(stage);
-  } else { startLoading(); }
-  window.addEventListener('scroll',tick,{passive:true});
-  window.addEventListener('resize',onResize);
-  tick();
+    var farLead=Math.round(window.innerHeight*3)+'px';
+    var ioFar=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(!e.isIntersecting) liberar(); });
+    },{rootMargin:farLead+' 0px '+farLead+' 0px'});
+    ioFar.observe(stage);
+  } else { activar(); }
 }
-initMotor({stage:'dp-stage',canvas:'dp-canvas',n:110,lut:LUT_DESPIECE,
+initMotor({stage:'dp-stage',canvas:'dp-canvas',n:148,lut:LUT_DESPIECE,
   dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
-initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:115,lut:LUT_ARNES,
+initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:148,lut:LUT_ARNES,
   dirMob:'img/arnes-frames/mob/',dirDesk:'img/arnes-frames/desk/'});
 </script>
 </body>

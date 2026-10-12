@@ -1,0 +1,33 @@
+{
+  "diagnostico_causa_real": {
+    "metodo": "Playwright, CPU 4x + Fast4G (4Mbps/20ms) + scroll continuo con wheel real, contando qué % de los frames de cada escena ya habían terminado de descargar+decodificar para el momento en que el scroll llegaba a esa escena",
+    "antes_despiece_pct_frames_listos_al_llegar": "16/110 (14.5%)",
+    "antes_arnes_pct_frames_listos_al_llegar": "10/115 (8.7%)",
+    "motos_referencia_pct_frames_listos_al_llegar": "71/71 (100%) y 137/137 (100%)",
+    "causa": "CA7/CA10/CA11 cargaban solo cada 4º frame (keyframes) al entrar en viewport+50%, y el resto por requestIdleCallback durante el scroll; bajo CPU throttle casi no hay tiempo idle mientras se scrollea, así que la mayoria de frames nunca llegaban a tiempo y draw() mostraba nearestLoaded() con un frame lejano = el salto/traba. Motos precarga TODO el frame-set de una vez al acercarse, sin depender de idle time."
+  },
+  "fix_aplicado": {
+    "carga": "precarga COMPLETA (no a cuentagotas) disparada por IntersectionObserver con rootMargin 1.5 viewports, en tandas de 10 cada 60ms (igual cadencia que el despiece de motos) para no saturar; liberación de memoria a 3 viewports (igual que motos); allReady a 90% de frames o 4s de timeout (AZ5); fallback nearestLoaded() si el frame exacto no llegó.",
+    "fairness_entre_escenas": "motorChunkPump(): round-robin que alterna una tanda de 10 por escena activa cada 60ms, para que #despiece y #escena-motor no se compitan el ancho de banda de forma desigual si ambas entran en el margen casi juntas."
+  },
+  "resultado_despues_despiece_pct_frames_listos_al_llegar": "148/148 (100%)",
+  "resultado_despues_arnes_pct_frames_listos_al_llegar": "45/148 al entrar (30%), 60/148 al salir (40%) — mejora real (antes 8.7%/27%) pero no 100%: el presupuesto combinado de ambas escenas en mob (~13.6MB) satura el techo de Fast4G (4Mbps) si el usuario scrollea muy rápido y ambas escenas arrancan casi juntas. Degradación controlada: se queda en el frame 1 (no salta a frames random) hasta que el 90% o el timeout de 4s habilitan nearestLoaded().",
+  "longtasks_trace_scroll_wheel_cpu4x_fast4g": {
+    "390px": { "motos": { "over50": 51, "worstMs": 1162, "fps": 88 }, "carros_despues": { "over50": 12, "worstMs": 106, "fps": 135 } },
+    "1440px": { "motos": { "over50": 96, "worstMs": 873, "fps": 92 }, "carros_despues": { "over50": 75, "worstMs": 152, "fps": 161 } },
+    "nota": "motos tiene MÁS long tasks que carros en esta métrica porque motos precarga TODO en una ráfaga al cargar la página (antes de que el usuario llegue a scrollear); carros reparte la carga en tandas, así que tiene menos/mas cortos long tasks durante el scroll en sí."
+  },
+  "consola_errores": "0 en todos los runs (antes, después, motos, 390 y 1440)",
+  "canvas_nunca_vacio": "12/12 checkpoints p=0/0.5/1 x 2 escenas x 2 viewports: has-content=true",
+  "peso_frames": {
+    "despiece_mob": "7.1MB (148 frames, 600x400, webp q82)",
+    "despiece_desk": "16MB (148 frames, 1080x720, webp q82)",
+    "arnes_mob": "6.5MB (148 frames, 630x308, webp q82)",
+    "arnes_desk": "14MB (148 frames, 1080x528, webp q82)",
+    "antes_referencia": "despiece mob 1.5MB(110f q40)/arnes mob 1.5MB(115f q40) aprox, CA11"
+  },
+  "tiempo_hasta_listo_fast4g_cpu4x": {
+    "390px": { "despiece_90pct_ms": 13465, "despiece_100pct_ms": 14625, "arnes_90pct_ms": 26383, "arnes_100pct_ms": 27516 },
+    "1440px": { "despiece_90pct_ms": 28842, "despiece_100pct_ms": 31437, "arnes_90pct_ms": 56131, "arnes_100pct_ms": 58627 }
+  }
+}
