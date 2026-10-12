@@ -23,12 +23,11 @@
   :root{
     --bg:#000; --panel:#101012; --panel2:#17171a; --line:#28282d;
     --tx:#ffffff; --mut:#9a9aa3; --dim:#6e6e77;
-    /* ORDEN AZ1: acentos Yamaha. --red para RELLENOS (botones/barra, texto blanco
-       encima da 4.8:1 AA); --red-tx para TEXTO rojo directo sobre negro/panel (el
-       rojo de marca a secas no llega a 4.5:1 en texto chico, este sí: 5.1-5.6:1).
-       --blue ya aclarado desde el azul racing real (~#1E50A0, 2.4-2.7:1, no pasaba)
-       a uno que sí da AA en texto grande/UI (4.0-4.4:1 sobre negro/panel). */
-    --red:#E60012; --red-tx:#FF2A3C; --blue:#3B72C8;
+    /* ORDEN CA3: acento azul automotriz (reemplaza el rojo Yamaha heredado de motos).
+       --acc para RELLENOS (botones/barra; blanco encima da ~4.64:1 AA, pasa normal y
+       grande); --acc-tx para TEXTO acento directo sobre negro/panel (11.6:1, sobra AA).
+       --blue (secundario, bordes de pill/reloj/aviso) no se tocó: ya era azul. */
+    --acc:#1F6FEB; --acc-tx:#9CC2FF; --blue:#3B72C8;
     --radius:16px; --max:1080px;
     --disp:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
@@ -47,10 +46,10 @@
   .btn.big{font-size:1.2rem;padding:20px 46px}
   .btn.ghost{background:transparent;color:#fff;border:1.5px solid #3a3a40;box-shadow:none}
   .btn.ghost:hover{border-color:#fff;box-shadow:none}
-  /* ORDEN AZ1: solo los 3 botones DE COMPRA en rojo Yamaha (el del nav queda blanco/negro
-     como antes); blanco sobre --red da 4.8:1 AA */
-  #btn-hero,#btn-pago,.buybar .btn{background:var(--red);color:#fff;box-shadow:0 10px 44px -10px rgba(230,0,18,.45)}
-  #btn-hero:hover,#btn-pago:hover,.buybar .btn:hover{box-shadow:0 16px 56px -10px rgba(230,0,18,.6)}
+  /* ORDEN CA3: solo los 3 botones DE COMPRA en azul automotriz (el del nav queda blanco/negro
+     como antes); blanco sobre --acc da ~4.64:1 AA */
+  #btn-hero,#btn-pago,.buybar .btn{background:var(--acc);color:#fff;box-shadow:0 10px 44px -10px rgba(31,111,235,.45)}
+  #btn-hero:hover,#btn-pago:hover,.buybar .btn:hover{box-shadow:0 16px 56px -10px rgba(31,111,235,.6)}
 
   /* MARCA (marca de corte estilo CapCut) */
   .logo{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:900;font-size:1.18rem;letter-spacing:-.04em}
@@ -64,9 +63,9 @@
   nav .btn{padding:10px 22px;font-size:.9rem}
 
   /* HERO */
-  /* ORDEN AZ9 (Esteban): glow rojo suave detrás del celular, además del glow blanco
+  /* ORDEN AZ9/CA3: glow azul suave detrás del celular, además del glow blanco
      general que ya había (radial a 50%/0% sin tocar) */
-  header{position:relative;padding:74px 0 60px;background:radial-gradient(55% 55% at 82% 32%,rgba(230,0,18,.14),transparent 70%),radial-gradient(85% 60% at 50% 0%,rgba(255,255,255,.07),transparent 70%)}
+  header{position:relative;padding:74px 0 60px;background:radial-gradient(55% 55% at 82% 32%,rgba(31,111,235,.14),transparent 70%),radial-gradient(85% 60% at 50% 0%,rgba(255,255,255,.07),transparent 70%)}
   /* ORDEN AZ1: nombro las 6 piezas del hero por grid-area en vez de mover el DOM, así
      desktop sigue siendo 2 columnas (device ocupa las 5 filas de texto, centrado igual
      que antes) y el móvil solo cambia el ORDEN VISUAL vía @media, sin duplicar markup.
@@ -86,7 +85,7 @@
   .pill b{color:#fff}
   header h1{font-size:clamp(2.2rem,6vw,3.8rem);margin-bottom:18px}
   header h1 .cut{position:relative;display:inline-block}
-  header h1 .cut::after{content:"";position:absolute;left:0;right:0;bottom:.06em;height:.14em;background:var(--red);transform:skewX(-18deg)}
+  header h1 .cut::after{content:"";position:absolute;left:0;right:0;bottom:.06em;height:.14em;background:var(--acc);transform:skewX(-18deg)}
   header p.sub{font-size:clamp(1.05rem,2.4vw,1.28rem);color:var(--mut);max-width:600px;margin:0 0 30px}
   header p.sub b{color:#fff}
   .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
@@ -99,9 +98,9 @@
 
   /* MOCKUP TELÉFONO (editor CapCut en blanco y negro) */
   .device{position:relative;width:262px;justify-self:center;filter:drop-shadow(0 34px 80px rgba(255,255,255,.14))}
-  /* ORDEN AZ9: glow rojo suave detrás del celular, dentro del mismo contexto de apilado
+  /* ORDEN AZ9/CA3: glow azul suave detrás del celular, dentro del mismo contexto de apilado
      que crea el filter de arriba (por eso basta con z-index:-1, no hace falta tocar nada más) */
-  .device::before{content:"";position:absolute;inset:-36px;z-index:-1;border-radius:50%;background:radial-gradient(60% 60% at 50% 46%,rgba(230,0,18,.38),transparent 72%);filter:blur(4px);pointer-events:none}
+  .device::before{content:"";position:absolute;inset:-36px;z-index:-1;border-radius:50%;background:radial-gradient(60% 60% at 50% 46%,rgba(31,111,235,.38),transparent 72%);filter:blur(4px);pointer-events:none}
   .phone{background:#0a0a0c;border:2px solid #2e2e34;border-radius:42px;padding:11px;position:relative}
   .phone::before{content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);width:80px;height:6px;border-radius:99px;background:#1c1c21;z-index:3}
   .screen{border-radius:32px;overflow:hidden;background:#000;border:1px solid #1e1e24}
@@ -110,7 +109,7 @@
   .pv .pv-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(.85)}
   .pv .tag{position:absolute;z-index:2;top:12px;left:12px;font-size:.6rem;font-weight:800;color:#000;background:#fff;padding:4px 10px;border-radius:99px}
   .pv .rec{position:absolute;z-index:2;top:12px;right:12px;font-size:.58rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:5px}
-  .pv .rec::before{content:"";width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 8px #ff4d5e}
+  .pv .rec::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
   .pv .play{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(4px);border:1.5px solid rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center}
   .pv .play::after{content:"";border-left:14px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}
   .tl{background:#0b0b0e;padding:10px 9px}
@@ -121,22 +120,22 @@
      video.play()/decode() a mano, que es justo lo que rompía en WebKit (ver AZ5). */
   .tl .thumbs{display:flex;gap:6px}
   .tl .thumb{position:relative;flex:1;height:34px;border-radius:7px;background-size:cover;background-position:center;overflow:hidden;opacity:.4;filter:grayscale(.4);animation:dvThumb 9s infinite}
-  .tl .thumb .fill{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--red);animation:dvFill 9s infinite}
+  .tl .thumb .fill{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--acc);animation:dvFill 9s infinite}
   .tl .t1{animation-delay:0s}.tl .t1 .fill{animation-delay:0s}
   .tl .t2{animation-delay:-3s}.tl .t2 .fill{animation-delay:-3s}
   .tl .t3{animation-delay:-6s}.tl .t3 .fill{animation-delay:-6s}
 
   /* CIFRAS */
-  /* ORDEN AZ9: grid 2x2 fijo (antes 4 en fila en desktop, 2x2 solo en mobile) + número
-     grande en rojo (antes azul solo en las 2 primeras, desde AZ1) — el azul de marca sigue
-     vivo en otras piezas del hero (pill, glow del reloj más abajo en #comprar) */
+  /* ORDEN AZ9/CA3: grid 2x2 fijo (antes 4 en fila en desktop, 2x2 solo en mobile) + número
+     grande en azul automotriz — el mismo azul vive en otras piezas del hero (pill, glow
+     del reloj más abajo en #comprar) */
   .badges{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:52px auto 0;max-width:480px}
   .badge{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 12px;text-align:center}
-  .badge .n{font-family:var(--disp);font-size:clamp(1.6rem,4vw,2.3rem);font-weight:900;line-height:1;letter-spacing:-.03em;color:var(--red-tx)}
+  .badge .n{font-family:var(--disp);font-size:clamp(1.6rem,4vw,2.3rem);font-weight:900;line-height:1;letter-spacing:-.03em;color:var(--acc-tx)}
   .badge .l{color:var(--mut);font-size:.82rem;margin-top:7px}
 
   section{padding:66px 0}
-  .eyebrow{color:var(--red-tx);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px}
+  .eyebrow{color:var(--acc-tx);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px}
   h2.title{font-size:clamp(1.8rem,4.5vw,2.7rem);margin-bottom:14px}
   .lead{color:var(--mut);font-size:1.08rem;max-width:640px;margin-bottom:8px}
   .lead b{color:#fff}
@@ -343,7 +342,7 @@
   .dp-stage{position:relative;max-width:900px;margin:26px auto 0}
   .dp-stage canvas{display:block;width:100%;height:auto;aspect-ratio:1152/768}
   .dp-bar{max-width:280px;height:3px;border-radius:99px;background:#1c1c21;margin:18px auto 0;overflow:hidden}
-  .dp-bar i{display:block;height:100%;width:calc(var(--t,0)*100%);background:var(--red)}
+  .dp-bar i{display:block;height:100%;width:calc(var(--t,0)*100%);background:var(--acc)}
   .dp-piezas{list-style:none;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px auto 0;max-width:640px;padding:0 20px}
   .dp-piezas li{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 15px;font-family:var(--disp);font-weight:800;font-size:.8rem}
   @media(max-width:820px){.dp-stage{width:100%;margin-left:0;padding:0 4px}}
@@ -503,18 +502,17 @@ document.addEventListener('click',function(ev){
 
   <div class="marcas">
     <p class="marcas-lb">Compatible con <span class="pend">[PENDIENTE]</span> marcas</p>
-    <!-- CA1: la cinta de logos de motos (Honda, Yamaha, KTM...) no aplica a carros y no hay
-         lista real de marcas de carros todavía — placeholder en texto, misma animación/CSS
-         (.cinta-tx ya soporta ítems de solo texto, sin tocar ninguna regla). -->
+    <!-- CA3: marcas reales de carros LatAm (sin enfoque Brasil), 57 en total repartidas en
+         las 2 cintas (29 + 28), orden por frecuencia; misma animación/CSS de .cinta-tx. -->
     <div class="cinta"><div class="cinta-track"><span class="cinta-grp">
-      <span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span>
+      <span class="cinta-it"><span class="cinta-tx">Chevrolet</span></span><span class="cinta-it"><span class="cinta-tx">Toyota</span></span><span class="cinta-it"><span class="cinta-tx">Nissan</span></span><span class="cinta-it"><span class="cinta-tx">Kia</span></span><span class="cinta-it"><span class="cinta-tx">Hyundai</span></span><span class="cinta-it"><span class="cinta-tx">Renault</span></span><span class="cinta-it"><span class="cinta-tx">Volkswagen</span></span><span class="cinta-it"><span class="cinta-tx">Mazda</span></span><span class="cinta-it"><span class="cinta-tx">Ford</span></span><span class="cinta-it"><span class="cinta-tx">Suzuki</span></span><span class="cinta-it"><span class="cinta-tx">Mitsubishi</span></span><span class="cinta-it"><span class="cinta-tx">Honda</span></span><span class="cinta-it"><span class="cinta-tx">Peugeot</span></span><span class="cinta-it"><span class="cinta-tx">Citroën</span></span><span class="cinta-it"><span class="cinta-tx">Fiat</span></span><span class="cinta-it"><span class="cinta-tx">Jeep</span></span><span class="cinta-it"><span class="cinta-tx">RAM</span></span><span class="cinta-it"><span class="cinta-tx">Dodge</span></span><span class="cinta-it"><span class="cinta-tx">Chrysler</span></span><span class="cinta-it"><span class="cinta-tx">Subaru</span></span><span class="cinta-it"><span class="cinta-tx">Isuzu</span></span><span class="cinta-it"><span class="cinta-tx">BYD</span></span><span class="cinta-it"><span class="cinta-tx">Chery</span></span><span class="cinta-it"><span class="cinta-tx">JAC</span></span><span class="cinta-it"><span class="cinta-tx">Great Wall</span></span><span class="cinta-it"><span class="cinta-tx">Haval</span></span><span class="cinta-it"><span class="cinta-tx">MG</span></span><span class="cinta-it"><span class="cinta-tx">Changan</span></span><span class="cinta-it"><span class="cinta-tx">Geely</span></span>
     </span><span class="cinta-grp" aria-hidden="true">
-      <span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span>
+      <span class="cinta-it"><span class="cinta-tx">Chevrolet</span></span><span class="cinta-it"><span class="cinta-tx">Toyota</span></span><span class="cinta-it"><span class="cinta-tx">Nissan</span></span><span class="cinta-it"><span class="cinta-tx">Kia</span></span><span class="cinta-it"><span class="cinta-tx">Hyundai</span></span><span class="cinta-it"><span class="cinta-tx">Renault</span></span><span class="cinta-it"><span class="cinta-tx">Volkswagen</span></span><span class="cinta-it"><span class="cinta-tx">Mazda</span></span><span class="cinta-it"><span class="cinta-tx">Ford</span></span><span class="cinta-it"><span class="cinta-tx">Suzuki</span></span><span class="cinta-it"><span class="cinta-tx">Mitsubishi</span></span><span class="cinta-it"><span class="cinta-tx">Honda</span></span><span class="cinta-it"><span class="cinta-tx">Peugeot</span></span><span class="cinta-it"><span class="cinta-tx">Citroën</span></span><span class="cinta-it"><span class="cinta-tx">Fiat</span></span><span class="cinta-it"><span class="cinta-tx">Jeep</span></span><span class="cinta-it"><span class="cinta-tx">RAM</span></span><span class="cinta-it"><span class="cinta-tx">Dodge</span></span><span class="cinta-it"><span class="cinta-tx">Chrysler</span></span><span class="cinta-it"><span class="cinta-tx">Subaru</span></span><span class="cinta-it"><span class="cinta-tx">Isuzu</span></span><span class="cinta-it"><span class="cinta-tx">BYD</span></span><span class="cinta-it"><span class="cinta-tx">Chery</span></span><span class="cinta-it"><span class="cinta-tx">JAC</span></span><span class="cinta-it"><span class="cinta-tx">Great Wall</span></span><span class="cinta-it"><span class="cinta-tx">Haval</span></span><span class="cinta-it"><span class="cinta-tx">MG</span></span><span class="cinta-it"><span class="cinta-tx">Changan</span></span><span class="cinta-it"><span class="cinta-tx">Geely</span></span>
     </span></div></div>
     <div class="cinta cinta-rev"><div class="cinta-track"><span class="cinta-grp">
-      <span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span>
+      <span class="cinta-it"><span class="cinta-tx">JMC</span></span><span class="cinta-it"><span class="cinta-tx">Foton</span></span><span class="cinta-it"><span class="cinta-tx">DFSK</span></span><span class="cinta-it"><span class="cinta-tx">Jetour</span></span><span class="cinta-it"><span class="cinta-tx">Omoda</span></span><span class="cinta-it"><span class="cinta-tx">BAIC</span></span><span class="cinta-it"><span class="cinta-tx">Dongfeng</span></span><span class="cinta-it"><span class="cinta-tx">KGM SsangYong</span></span><span class="cinta-it"><span class="cinta-tx">Mercedes-Benz</span></span><span class="cinta-it"><span class="cinta-tx">BMW</span></span><span class="cinta-it"><span class="cinta-tx">Audi</span></span><span class="cinta-it"><span class="cinta-tx">Volvo</span></span><span class="cinta-it"><span class="cinta-tx">Land Rover</span></span><span class="cinta-it"><span class="cinta-tx">Lexus</span></span><span class="cinta-it"><span class="cinta-tx">Porsche</span></span><span class="cinta-it"><span class="cinta-tx">Mini</span></span><span class="cinta-it"><span class="cinta-tx">SEAT</span></span><span class="cinta-it"><span class="cinta-tx">Cupra</span></span><span class="cinta-it"><span class="cinta-tx">Alfa Romeo</span></span><span class="cinta-it"><span class="cinta-tx">Jaguar</span></span><span class="cinta-it"><span class="cinta-tx">GMC</span></span><span class="cinta-it"><span class="cinta-tx">Cadillac</span></span><span class="cinta-it"><span class="cinta-tx">Buick</span></span><span class="cinta-it"><span class="cinta-tx">Lincoln</span></span><span class="cinta-it"><span class="cinta-tx">Acura</span></span><span class="cinta-it"><span class="cinta-tx">Infiniti</span></span><span class="cinta-it"><span class="cinta-tx">Hino</span></span><span class="cinta-it"><span class="cinta-tx">Tesla</span></span>
     </span><span class="cinta-grp" aria-hidden="true">
-      <span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span><span class="cinta-it"><span class="cinta-tx pend">[PENDIENTE]</span></span>
+      <span class="cinta-it"><span class="cinta-tx">JMC</span></span><span class="cinta-it"><span class="cinta-tx">Foton</span></span><span class="cinta-it"><span class="cinta-tx">DFSK</span></span><span class="cinta-it"><span class="cinta-tx">Jetour</span></span><span class="cinta-it"><span class="cinta-tx">Omoda</span></span><span class="cinta-it"><span class="cinta-tx">BAIC</span></span><span class="cinta-it"><span class="cinta-tx">Dongfeng</span></span><span class="cinta-it"><span class="cinta-tx">KGM SsangYong</span></span><span class="cinta-it"><span class="cinta-tx">Mercedes-Benz</span></span><span class="cinta-it"><span class="cinta-tx">BMW</span></span><span class="cinta-it"><span class="cinta-tx">Audi</span></span><span class="cinta-it"><span class="cinta-tx">Volvo</span></span><span class="cinta-it"><span class="cinta-tx">Land Rover</span></span><span class="cinta-it"><span class="cinta-tx">Lexus</span></span><span class="cinta-it"><span class="cinta-tx">Porsche</span></span><span class="cinta-it"><span class="cinta-tx">Mini</span></span><span class="cinta-it"><span class="cinta-tx">SEAT</span></span><span class="cinta-it"><span class="cinta-tx">Cupra</span></span><span class="cinta-it"><span class="cinta-tx">Alfa Romeo</span></span><span class="cinta-it"><span class="cinta-tx">Jaguar</span></span><span class="cinta-it"><span class="cinta-tx">GMC</span></span><span class="cinta-it"><span class="cinta-tx">Cadillac</span></span><span class="cinta-it"><span class="cinta-tx">Buick</span></span><span class="cinta-it"><span class="cinta-tx">Lincoln</span></span><span class="cinta-it"><span class="cinta-tx">Acura</span></span><span class="cinta-it"><span class="cinta-tx">Infiniti</span></span><span class="cinta-it"><span class="cinta-tx">Hino</span></span><span class="cinta-it"><span class="cinta-tx">Tesla</span></span>
     </span></div></div>
   </div>
 
