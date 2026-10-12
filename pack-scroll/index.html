@@ -901,14 +901,34 @@ function motorChunkRegister(run,dist){
   motorChunkRunners.push({run:run,dist:dist||function(){return 0;}});
   if(!motorChunkPumping){ motorChunkPumping=true; motorChunkPump(); }
 }
-var MOTOR_LOAD_MAX=4, motorLoadQ=[], motorLoadActive=0;
+/* ORDEN CB3: el margen de precarga mas amplio del arnes (leadMul) no alcanzo solo — medido
+   con Playwright (iPhone UA + CPU4x + Fast4G + scroll continuo): el despiece arranca primero
+   y, al estar mas cerca del viewport casi todo el scroll, motorChunkPump (orden por distancia,
+   CB2) le da siempre el turno a sus pedidos; el arnes llegaba a ~45/148 frames al salir de
+   pantalla. ARNES_RESERVED reserva slots de motorLoadEnqueue para el arnes en cuanto tiene
+   pedidos pendientes, sin subir MOTOR_LOAD_MAX (evita el ERR_INSUFFICIENT_RESOURCES de CA12
+   con 2 escenas a la vez) — subido a 3/4 tras medir que 2/4 + leadMul no alcanzaba (ver
+   medicion real en la orden). */
+var MOTOR_LOAD_MAX=4, ARNES_RESERVED=3, motorLoadQ=[], motorLoadActive=0, motorLoadActiveByScene={};
 function motorLoadPump(){
   while(motorLoadActive<MOTOR_LOAD_MAX && motorLoadQ.length){
-    var job=motorLoadQ.shift(); motorLoadActive++; job();
+    var idx=-1;
+    if((motorLoadActiveByScene.arnes||0)<ARNES_RESERVED){
+      idx=motorLoadQ.findIndex(function(j){ return j.scene==='arnes'; });
+    }
+    if(idx<0) idx=0;
+    var job=motorLoadQ.splice(idx,1)[0];
+    motorLoadActive++;
+    motorLoadActiveByScene[job.scene]=(motorLoadActiveByScene[job.scene]||0)+1;
+    job.go();
   }
 }
-function motorLoadEnqueue(run){
-  motorLoadQ.push(function(){ run(function(){ motorLoadActive--; motorLoadPump(); }); });
+function motorLoadEnqueue(scene,run){
+  motorLoadQ.push({ scene:scene, go:function(){
+    run(function(){
+      motorLoadActive--; motorLoadActiveByScene[scene]--; motorLoadPump();
+    });
+  }});
   motorLoadPump();
 }
 function initMotor(cfg){
@@ -917,7 +937,7 @@ function initMotor(cfg){
   var ctx=canvas.getContext('2d'), N=cfg.n, LUT=cfg.lut;
   var dir = window.matchMedia('(max-width:720px)').matches ? cfg.dirMob : cfg.dirDesk;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var imgs=[], ok=[], requested=[], loadedCount=0, allReady=false, started=false, want=0, cur=0, drawnPos=-1, running=false, gen=0, maxContig=0;
+  var imgs=[], ok=[], requested=[], loadedCount=0, allReady=false, started=false, want=0, cur=0, drawnPos=-1, running=false, gen=0, maxContig=0, scrollDown=true;
   var W=0, H=0, lastWidth=window.innerWidth;
   var READY_FRAC=0.9, READY_TIMEOUT_MS=4000;
   function src(i){ return dir+'f_'+String(i).padStart(3,'0')+'.webp'; }
@@ -950,11 +970,24 @@ function initMotor(cfg){
        dibujo nunca muestra un frame no contiguo ni retrocede: solo avanza hasta donde ya
        llegó la carga secuencial real. Sin gracefulDegrade (#despiece) sigue igual que
        siempre: frame 1 fijo hasta allReady. */
-    if(!allReady) pos = cfg.gracefulDegrade ? Math.min(pos,Math.max(1,maxContig)) : 1;
+    if(!allReady){
+      pos = cfg.gracefulDegrade ? Math.min(pos,Math.max(1,maxContig)) : 1;
+    } else if(scrollDown){
+      /* ORDEN CB3 (#despiece "retrocede 1f en 27% de draws"): el 90%/4s de allReady puede
+         dejar huecos sueltos en ok[] (frames aun sin terminar de cargar/decodificar) —
+         nearestLoaded() revisaba i0-d antes que i0+d, así que un hueco bajando el scroll
+         podia mostrar un frame ANTERIOR al ultimo dibujado (el retroceso visible). Igual
+         que arriba con gracefulDegrade: bajando, se tapa la posicion a mostrar en la
+         frontera contigua ya cargada (maxContig, que solo crece) — nunca salta a un frame
+         no contiguo ni retrocede, solo "sostiene" el ultimo frame hasta que la carga real
+         avanza. Subiendo sí se permite retroceso real (el usuario lo pide). */
+      pos = Math.min(pos,Math.max(1,maxContig));
+    }
     if(!force && Math.abs(pos-drawnPos)<0.01) return;
     var i0=Math.floor(pos), frac=pos-i0, i1=i0+1;
     if(i0<1){ i0=1; i1=1; frac=0; } if(i1>N){ i1=N; if(i0>N) i0=N; }
     if(!imgs[i0] || !ok[i0]){
+      if(scrollDown) return; // ya cubierto por el tope a maxContig arriba; red de seguridad
       var nf=nearestLoaded(i0);
       if(nf===null) return;
       i0=nf; i1=nf; frac=0;
@@ -970,7 +1003,7 @@ function initMotor(cfg){
   function load(i){
     if(imgs[i] || requested[i]) return;
     requested[i]=true;
-    motorLoadEnqueue(function(done){
+    motorLoadEnqueue(cfg.sceneId,function(done){
       var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
       var mark=function(){
         if(imgs[i]!==im){ done(); return; }
@@ -1023,6 +1056,7 @@ function initMotor(cfg){
     var start=vh, end=vh*0.38 - r.height/2;
     var p=(start - r.top)/(start - end);
     p=Math.max(0,Math.min(1,p));
+    scrollDown = p>=want;
     want=p;
     kick();
   }
@@ -1045,12 +1079,15 @@ function initMotor(cfg){
     gen++;
     window.removeEventListener('scroll',tick);
     window.removeEventListener('resize',onResize);
-    imgs=[]; ok=[]; requested=[]; loadedCount=0; allReady=false; started=false; running=false; want=0; cur=0; maxContig=0;
+    imgs=[]; ok=[]; requested=[]; loadedCount=0; allReady=false; started=false; running=false; want=0; cur=0; maxContig=0; scrollDown=true;
   }
   sizeCanvas();
   draw(1,true);
   if('IntersectionObserver' in window){
-    var lead=Math.round(window.innerHeight*1.5)+'px';
+    /* ORDEN CB3: margen de precarga configurable por escena (antes 1.5vh fijo para las 2) —
+       el arnés (#escena-motor) lo sube a leadMul:3 (techo del rango pedido) para activarse mucho antes y correr en
+       paralelo con #despiece durante más tiempo; #despiece queda igual (default 1.5). */
+    var lead=Math.round(window.innerHeight*(cfg.leadMul||1.5))+'px';
     var io=new IntersectionObserver(function(es){
       es.forEach(function(e){ if(e.isIntersecting && !started) activar(); });
     },{rootMargin:lead+' 0px '+lead+' 0px'});
@@ -1063,7 +1100,7 @@ function initMotor(cfg){
   } else { activar(); }
 }
 initMotor({stage:'dp-stage',canvas:'dp-canvas',n:148,lut:LUT_DESPIECE,
-  dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
+  dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/', sceneId:'despiece'});
 /* ORDEN CB2 (OK-ESTEBAN:2026-10-12, autorizado a tocar el mapeo de #escena-motor, reemplaza
    el flag de CB1): gracefulDegrade:true deja de forzar el cuadro 1 (cerrado) mientras
    !allReady, pero ya NO usa nearestLoaded() con la posición real de scroll (eso saltaba
@@ -1073,7 +1110,7 @@ initMotor({stage:'dp-stage',canvas:'dp-canvas',n:148,lut:LUT_DESPIECE,
    cerrado hasta el 90%/4s. #despiece NO lleva este flag: su comportamiento queda igual. */
 initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:148,lut:LUT_ARNES,
   dirMob:'img/arnes-frames/mob/',dirDesk:'img/arnes-frames/desk/',
-  gracefulDegrade:true});
+  gracefulDegrade:true, leadMul:3, sceneId:'arnes'});
 </script>
 </body>
 </html>

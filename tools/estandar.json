@@ -41,8 +41,9 @@
             "mob":  {"w": 600,  "h": 400}
           },
           "kb_por_frame": {
+            "_nota_mob": "OK-ESTEBAN:2026-10-12 ORDEN CB3 -- mob bajado de q82 a q45 (reencode desde el webp ya existente, sin volver al video fuente) hacia el techo de motos (23-30KB); verificado sin perdida visible con contact-sheet 1:1 (crop zoom sobre textura de motor). Desktop NO se toco (fuera de alcance de CB3).",
             "desk": {"avg": 104.99, "tolerancia_pct": 0.25},
-            "mob":  {"avg": 46.77, "tolerancia_pct": 0.25}
+            "mob":  {"avg": 27.9, "tolerancia_pct": 0.25}
           }
         },
         "arnes-horizontal": {
@@ -53,8 +54,9 @@
             "mob":  {"w": 630,  "h": 308}
           },
           "kb_por_frame": {
+            "_nota_mob": "OK-ESTEBAN:2026-10-12 ORDEN CB3 -- mismo reencode q45 que despiece-horizontal, ver nota ahi.",
             "desk": {"avg": 95.25, "tolerancia_pct": 0.25},
-            "mob":  {"avg": 42.94, "tolerancia_pct": 0.25}
+            "mob":  {"avg": 25.4, "tolerancia_pct": 0.25}
           }
         }
       }
