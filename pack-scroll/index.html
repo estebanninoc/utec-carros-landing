@@ -340,8 +340,8 @@
   /* DESPIECE: se abre mientras pasa por la pantalla, SIN quedarse pegado */
   .dp{padding:70px 0 40px;text-align:center;overflow:hidden}
   .dp .lead{margin-left:auto;margin-right:auto}
-  .dp-stage{position:relative;max-width:1080px;margin:26px auto 0}
-  .dp-stage canvas{display:block;width:100%;height:auto;aspect-ratio:1280/732}
+  .dp-stage{position:relative;max-width:900px;margin:26px auto 0}
+  .dp-stage canvas{display:block;width:100%;height:auto;aspect-ratio:1152/768}
   .dp-bar{max-width:280px;height:3px;border-radius:99px;background:#1c1c21;margin:18px auto 0;overflow:hidden}
   .dp-bar i{display:block;height:100%;width:calc(var(--t,0)*100%);background:var(--red)}
   .dp-piezas{list-style:none;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px auto 0;max-width:640px;padding:0 20px}
@@ -357,7 +357,6 @@
   @media(max-width:820px){
     #despiece{padding:20px 0 20px}
     .dp-stage{margin-top:12px}
-    #dp-bar{margin-top:10px}
     #despiece .dp-piezas{margin-top:8px}
   }
   /* ESCENAS scroll-scrub chicas (motor/carburador/freno), mismo mecanismo que .dp-stage: sin caja, flota sobre el fondo */
@@ -428,10 +427,11 @@
 
   /* === CA1: reglas nuevas (no existían en motos pack-scroll) ===
      1) .pend — marcador visible para toda cifra/lista sin confirmar (orden CA1 punto 3).
-     2) .anim-ph — placeholder de las 3 animaciones que no sirven para carros (despiece
-        grande, motor, carrusel del hero): mismo tamaño que el contenedor original, fondo
-        negro, texto centrado. El canvas/JS de scroll-scrub sigue intacto debajo (ver
-        comentarios junto a initEscena/initMotor al final del archivo y README-carros.md). */
+     2) .anim-ph — placeholder de las animaciones que no sirven para carros (quedan motor
+        chico y carrusel del hero; el despiece grande ya es real desde ORDEN CA2): mismo
+        tamaño que el contenedor original, fondo negro, texto centrado. El canvas/JS de
+        scroll-scrub sigue intacto debajo (ver comentarios junto a initMotor al final del
+        archivo y README-carros.md). */
   .pend{display:inline-block;border:1.5px dashed #f5c518;border-radius:6px;padding:0 7px;color:#f5c518;font-weight:800}
   /* .badge .n hereda font-size hasta 2.3rem (clamp) — "[PENDIENTE]" a ese tamaño no cabe
      en la mitad de .badges (grid 2 columnas, 390px) y empuja scroll horizontal. Achicado
@@ -535,14 +535,13 @@ document.addEventListener('click',function(ev){
     <h2 class="title">Tu carro, pieza por pieza</h2>
     <p class="lead">Baja y mira cómo se abre. <b>Así de claro</b> te lo muestra el manual de tu carro: cada pieza, el orden de armado y el torque de cada tornillo.</p>
   </div>
+  <!-- ORDEN CA2: despiece real del motor (Higgsfield minimax_h3_max, carro-motor-despiece.mp4)
+       como scroll-scrub sin pin/sticky — mismo mecanismo initMotor() ya probado en motos para
+       #escena-motor (AY6-AY9 + AZ2/AZ3/AZ5): LUT por longitud de arco, canvas a
+       devicePixelRatio (tope 2), decode() robusto, allReady a 90%/4s. -->
   <div class="dp-stage" id="dp-stage">
-    <canvas id="dp-canvas" width="1280" height="732" role="img" aria-label="Un carro armado que se abre en despiece mientras bajas: motor, transmisión, suspensión, frenos, dirección, sistema eléctrico, refrigeración y escape por separado."></canvas>
-    <!-- CA1: despiece de moto no sirve para carro. Placeholder del mismo tamaño que #dp-canvas;
-         el canvas y su llamada a initEscena() siguen abajo, comentados y listos (ver
-         README-carros.md para nombres/cantidad de frames esperados). -->
-    <div class="anim-ph"><span>Animación de carro — en producción</span></div>
+    <canvas id="dp-canvas" width="800" height="533" role="img" aria-label="Motor de un carro que se abre en despiece mientras bajas: tapa de válvulas, culata, cilindro, pistón, biela, cigüeñal, alternador, batería, radiador y faros por separado."></canvas>
   </div>
-  <div class="dp-bar" id="dp-bar" aria-hidden="true"><i></i></div>
   <ul class="dp-piezas">
     <li>Motor</li><li>Transmisión</li><li>Suspensión</li><li>Frenos</li><li>Dirección</li><li>Sistema eléctrico</li><li>Refrigeración</li><li>Escape</li>
   </ul>
@@ -821,143 +820,16 @@ document.addEventListener('click',function(ev){
   });
 })();
 
-/* CA1: despiece (carro grande + motor) — el mecanismo initEscena/initMotor de motos queda
-   intacto y documentado para cuando lleguen los frames reales de carro (ver README-carros.md).
-   Las llamadas quedan COMENTADAS (mismo patrón que carburador/freno/embrague/horquilla más
-   arriba) para no pedir imágenes que no existen — eso rompería la consola (404) y dibujaría
-   canvas en blanco encima del placeholder. Mientras tanto el placeholder .anim-ph cubre el
-   canvas con position:absolute (ver CSS "CA1: reglas nuevas").
-
-function initEscena(cfg){
-  var stage=document.getElementById(cfg.stage), canvas=document.getElementById(cfg.canvas), bar=cfg.bar?document.getElementById(cfg.bar):null;
-  var track=cfg.track?document.getElementById(cfg.track):null;
-  if(!stage||!canvas) return;
-  var ctx=canvas.getContext('2d'), N=cfg.n, W=canvas.width, H=canvas.height;
-  var dir = window.matchMedia('(max-width:720px)').matches ? cfg.dirMob : cfg.dirDesk;
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var imgs=[], ok=[], loadedCount=0, allReady=false, want=1, cur=1, started=false, running=false, gen=0;
-  var stickyTopPx=window.innerHeight*0.10, lastWidth=window.innerWidth;
-  var READY_FRAC=0.9, READY_TIMEOUT_MS=4000;
-  function src(i){ return dir+'f_'+String(i).padStart(3,'0')+'.webp'; }
-  function nearestLoaded(i){
-    if(ok[i]) return i;
-    for(var d=1; d<N; d++){
-      if(i-d>=1 && ok[i-d]) return i-d;
-      if(i+d<=N && ok[i+d]) return i+d;
-    }
-    return null;
-  }
-  function draw(pos){
-    if(!started || !imgs.length) return;
-    if(!allReady) pos=1;
-    var i0=Math.floor(pos), frac=pos-i0, i1=i0+1;
-    if(i0<1){ i0=1; i1=1; frac=0; } if(i1>N){ i1=N; if(i0>N) i0=N; }
-    if(!imgs[i0] || !ok[i0]){
-      i0=nearestLoaded(i0);
-      if(i0==null) return;
-      i1=i0; frac=0;
-    }
-    ctx.clearRect(0,0,W,H);
-    ctx.globalAlpha=1; ctx.drawImage(imgs[i0],0,0,W,H);
-    if(i1!==i0 && frac>0.004 && imgs[i1] && ok[i1]){ ctx.globalAlpha=frac; ctx.drawImage(imgs[i1],0,0,W,H); ctx.globalAlpha=1; }
-  }
-  function checkReady(){
-    if(allReady) return;
-    if(loadedCount>=Math.ceil(N*READY_FRAC)){ allReady=true; draw(cur); }
-  }
-  function load(i){
-    if(imgs[i]) return;
-    var im=new Image(); im.decoding='async'; im.src=src(i); imgs[i]=im;
-    var mark=function(){
-      if(imgs[i]!==im) return; ok[i]=true; loadedCount++;
-      if(i===1) draw(cur);
-      checkReady();
-      if(!allReady && Math.abs(cur-i)<1) draw(cur);
-    };
-    if(im.decode){ im.decode().then(mark, mark); } else { im.onload=mark; im.onerror=mark; }
-  }
-  function startLoad(){
-    if(started) return; started=true;
-    gen++; var myGen=gen;
-    if(reduced){ load(N); want=N; cur=N; if(bar) bar.style.setProperty('--t',1); return; }
-    var i=1;
-    function chunk(){
-      if(!started || gen!==myGen) return;
-      var end=Math.min(N,i+9);
-      for(; i<=end; i++) load(i);
-      if(i<=N) setTimeout(chunk,60);
-    }
-    chunk();
-    setTimeout(function(){
-      if(gen!==myGen || allReady) return;
-      if(started){ allReady=true; draw(cur); }
-    }, READY_TIMEOUT_MS);
-  }
-  function anim(){
-    if(!started){ running=false; return; }
-    var d=want-cur;
-    if(Math.abs(d)<0.01){ cur=want; draw(cur); running=false; return; }
-    cur+=d*0.14;
-    draw(cur);
-    requestAnimationFrame(anim);
-  }
-  function kick(){ if(!running){ running=true; requestAnimationFrame(anim); } }
-  function tick(){
-    var vh=window.innerHeight, p;
-    if(track){
-      var tr=track.getBoundingClientRect(), stageH=stage.getBoundingClientRect().height;
-      var range=Math.max(1, tr.height - stageH);
-      p=(stickyTopPx - tr.top)/range;
-    } else {
-      var r=stage.getBoundingClientRect();
-      var start=vh, end=vh*0.45 - r.height/2;
-      p=(start - r.top)/(start - end);
-    }
-    p=Math.max(0,Math.min(1,p));
-    if(bar) bar.style.setProperty('--t',p.toFixed(3));
-    want=1+p*(N-1);
-    kick();
-  }
-  function onResize(){
-    var w=window.innerWidth;
-    if(w===lastWidth) return;
-    lastWidth=w;
-    stickyTopPx=window.innerHeight*0.10;
-    tick();
-  }
-  function activar(){
-    startLoad();
-    if(reduced) return;
-    window.addEventListener('scroll',tick,{passive:true});
-    window.addEventListener('resize',onResize);
-    tick();
-  }
-  function liberar(){
-    if(!started) return;
-    gen++;
-    window.removeEventListener('scroll',tick);
-    window.removeEventListener('resize',onResize);
-    imgs=[]; ok=[]; loadedCount=0; allReady=false; started=false; running=false; want=1; cur=1;
-    ctx.clearRect(0,0,W,H);
-  }
-  var ioTarget=track||stage;
-  if('IntersectionObserver' in window){
-    var lead=Math.round(window.innerHeight*1.5)+'px';
-    var io=new IntersectionObserver(function(es){
-      es.forEach(function(e){ if(e.isIntersecting && !started) activar(); });
-    },{rootMargin:lead+' 0px '+lead+' 0px'});
-    io.observe(ioTarget);
-    var farLead=Math.round(window.innerHeight*3)+'px';
-    var ioFar=new IntersectionObserver(function(es){
-      es.forEach(function(e){ if(!e.isIntersecting) liberar(); });
-    },{rootMargin:farLead+' 0px '+farLead+' 0px'});
-    ioFar.observe(ioTarget);
-  } else { activar(); }
-}
-initEscena({stage:'dp-stage',canvas:'dp-canvas',bar:'dp-bar',n:71,
-  dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
-
-var LUT_MOTOR=[1.0,4.168,6.397,8.38,10.254,11.749,13.379,14.753,16.028,17.361,18.801,20.104,21.459,23.046,24.414,25.801,27.491,28.881,30.27,31.9,33.2,34.329,35.512,36.829,38.075,39.114,40.532,41.975,43.454,44.616,45.737,46.735,47.613,48.439,49.279,50.194,51.148,52.007,52.743,53.545,54.402,55.236,55.972,56.753,57.489,58.216,58.976,59.773,60.526,61.233,61.888,62.525,63.17,63.847,64.536,65.215,65.869,66.472,67.066,67.702,68.363,69.04,69.638,70.254,70.9,71.486,72.067,72.686,73.318,73.964,74.597,75.215,75.811,76.409,77.008,77.643,78.287,78.941,79.577,80.199,80.798,81.438,82.095,82.731,83.428,84.152,84.818,85.453,86.086,86.785,87.511,88.236,88.935,89.604,90.278,90.964,91.716,92.494,93.273,94.03,94.714,95.447,96.216,96.983,97.875,98.702,99.459,100.21,101.05,102.022,102.87,103.666,104.451,105.262,106.142,107.062,107.963,108.789,109.682,110.571,111.56,112.582,113.484,114.412,115.531,116.616,117.718,118.823,120.097,121.594,122.9,124.249,126.05,127.702,129.935,132.279,137.0];
+/* ORDEN CA2: #despiece/dp-canvas pasa de placeholder a la animación real del motor (Higgsfield
+   minimax_h3_max, carro-motor-despiece.mp4: arranca armado con capó abierto y termina en
+   despiece sobre negro). Usa initMotor() — el MISMO mecanismo ya probado en motos para
+   #escena-motor (AY6-AY9 + AZ2/AZ3/AZ5), sin pin/sticky: LUT por longitud de arco (145 cuadros
+   interpolados con minterpolate y remuestreados por diff perceptual, mismo método que
+   LUT_MOTOR), canvas a devicePixelRatio (tope 2), decode() que cuenta el resolve y el reject
+   por igual, allReady a 90% de cuadros cargados o 4s, lo que pase primero.
+   #escena-motor (motor chico, portrait) sigue en placeholder CA1 — initMotor queda listo para
+   reusarse ahí también cuando haya frames reales de esa escena. */
+var LUT_DESPIECE=[1.0,4.462,6.389,7.563,8.609,10.439,11.379,11.977,12.375,12.764,13.189,13.669,14.134,14.568,15.015,16.223,16.635,17.036,17.353,17.669,17.986,18.429,18.88,19.261,19.616,19.972,20.315,20.657,20.999,21.386,21.772,22.167,22.574,22.981,23.408,23.837,24.263,24.689,25.102,25.484,25.865,26.231,26.587,26.943,27.328,27.718,28.126,28.581,29.038,29.522,30.005,30.379,30.753,31.109,31.429,31.75,32.751,33.419,33.872,34.355,34.851,35.265,35.644,36.026,36.442,36.858,37.422,38.489,39.451,39.953,40.352,40.741,41.175,41.699,42.329,43.1,43.869,45.204,45.597,45.991,46.645,47.362,48.175,49.112,49.977,50.784,51.529,52.268,53.044,53.941,54.838,55.856,56.813,57.632,58.428,59.159,59.709,60.732,62.15,63.047,63.855,64.43,64.953,65.712,67.281,68.237,68.93,69.54,70.176,70.926,71.669,73.178,73.897,74.628,75.466,76.351,77.16,77.981,78.833,79.785,81.04,82.039,83.017,83.939,84.919,86.015,87.143,88.171,89.192,90.919,92.111,93.101,94.905,97.004,98.067,100.133,102.514,104.414,107.176,110.118,114.008,119.25,124.919,134.909,145.0];
 function initMotor(cfg){
   var stage=document.getElementById(cfg.stage), canvas=document.getElementById(cfg.canvas);
   if(!stage||!canvas) return;
@@ -1033,9 +905,12 @@ function initMotor(cfg){
   window.addEventListener('resize',onResize);
   tick();
 }
-initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:137,lut:LUT_MOTOR,
+initMotor({stage:'dp-stage',canvas:'dp-canvas',n:145,lut:LUT_DESPIECE,
+  dirMob:'img/dp-frames/mob/',dirDesk:'img/dp-frames/desk/'});
+/* #escena-motor (motor chico, placeholder CA1): activar con una segunda llamada igual,
+initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:<N>,lut:LUT_<...>,
   dirMob:'img/scroll-frames/motor/mob/',dirDesk:'img/scroll-frames/motor/desk/'});
-*/
+y borrar su <div class="anim-ph"> en el HTML, cuando haya frames reales de esa escena. */
 </script>
 </body>
 </html>

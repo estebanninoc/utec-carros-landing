@@ -7,36 +7,32 @@ mecanismo JS de scroll-scrub siguen intactos y comentados** dentro de `index.htm
 para recibir material real de carro sin tocar CSS ni JS otra vez. Esta nota documenta
 exactamente qué archivos espera cada una.
 
-## 1) Despiece grande (`#despiece`, `<canvas id="dp-canvas">`)
+## 1) Despiece grande (`#despiece`, `<canvas id="dp-canvas">`) — LIVE desde ORDEN CA2
 
-- Carpetas esperadas (mismos nombres que en motos, dentro de este mismo repo así que no
-  hay colisión): `pack-scroll/img/dp-frames/mob/` y `pack-scroll/img/dp-frames/desk/`.
-- Archivos: `f_000.webp` a `f_0NN.webp` (padding de 3 dígitos — `f_'+String(i).padStart(3,'0')+'.webp'`).
-  En motos eran 71 frames (`f_001.webp`...`f_071.webp`, el índice empieza en 1, no en 0).
-  Ajustar la cantidad real al exportar y actualizar `n:71` en la llamada `initEscena(...)`
-  si el conteo final es distinto.
-- Canvas fijo a `width="1280" height="732"` (relación 1280/732, ver `.dp-stage canvas{aspect-ratio:1280/732}`).
-- **Para reactivar:** en `index.html`, dentro de `<script>` al final, hay un bloque JS
-  comentado con `/* CA1: despiece (carro grande + motor) ... */` que contiene `function
-  initEscena(cfg){...}`, `function initMotor(cfg){...}` y las dos llamadas finales
-  `initEscena({stage:'dp-stage',...})` / `initMotor({stage:'scr-motor-stage',...})`.
-  Borrar el `/*` de apertura (línea con "CA1: despiece...") y el `*/` de cierre (justo
-  antes de `</script>`) para volver a activar ambas animaciones de una vez.
-- También borrar el `<div class="anim-ph">...</div>` que está pegado al `<canvas
-  id="dp-canvas">` dentro de `#dp-stage` (y el de `#scr-motor-stage`), para que el canvas
-  vuelva a verse.
+- Ya NO es placeholder: usa el despiece real del motor (Higgsfield minimax_h3_max,
+  `carro-motor-despiece.mp4` en `/opt/guardian-shared/fabrica/carros-c/vid-hf/`), 145 cuadros
+  interpolados (ffmpeg `minterpolate`) y remuestreados por longitud de arco (`LUT_DESPIECE`
+  en el `<script>`, mismo método que `LUT_MOTOR` documentaba para motos).
+- Frames en `pack-scroll/img/dp-frames/desk/` (800×533, 145 archivos, ~8.2MB) y
+  `pack-scroll/img/dp-frames/mob/` (440×293, 145 archivos, ~3.3MB), `f_001.webp`...`f_145.webp`.
+- Usa `initMotor()` (NO `initEscena()`): sin pin/sticky, igual que `#escena-motor` en motos
+  (AY6-AY9 + AZ2/AZ3/AZ5) — `initEscena()` se quitó del script por quedar sin uso.
+- CSS: `.dp-stage{max-width:900px}`, `.dp-stage canvas{aspect-ratio:1152/768}` (video horizontal;
+  en motos esta sección era 1280/732). `#dp-bar` se quitó del HTML (`initMotor` no lo usa).
 
 ## 2) Motor (`#escena-motor`, `<canvas id="scr-motor-canvas">`)
 
 - Carpetas esperadas: `pack-scroll/img/scroll-frames/motor/mob/` y
   `pack-scroll/img/scroll-frames/motor/desk/`.
-- Archivos: `f_000.webp`... En motos eran 137 frames (`n:137`) con una LUT de remuestreo
-  por longitud de arco (`LUT_MOTOR`, ya en el bloque comentado) — esa LUT es específica de
-  la cadencia de apertura de un motor de moto; si el motor de carro se abre con un ritmo
-  visual distinto, lo más simple es borrar `lut:LUT_MOTOR` de la llamada final (`initMotor`
-  usa `lutPos(p)` que cae de vuelta a progreso lineal 0..1 si no hay LUT... revisar
-  `lutPos()` antes de asumirlo — si no, generar una LUT nueva midiendo los frames reales,
-  mismo método que la nota ORDEN AY9 ya deja documentado ahí mismo).
+- Archivos: `f_000.webp`... `initMotor()` ya está activo en el `<script>` (lo usa `#despiece`,
+  ver sección 1) — para esta escena solo hace falta una segunda llamada
+  `initMotor({stage:'scr-motor-stage',canvas:'scr-motor-canvas',n:<N>,lut:LUT_<...>,
+  dirMob:'img/scroll-frames/motor/mob/',dirDesk:'img/scroll-frames/motor/desk/'})` (ver el
+  comentario que queda justo después de la llamada de `#despiece`). Generar una LUT propia
+  midiendo los frames reales de ESTA escena (mismo método que `LUT_DESPIECE`/`LUT_MOTOR` de
+  motos, por longitud de arco) — no reusar `LUT_DESPIECE`, es específica de la cadencia de
+  ese otro video. Sin LUT, `lutPos(p)` cae a progreso lineal 0..1 (revisar que siga siendo
+  aceptable antes de asumirlo).
 - Canvas con `width="784" height="1361"` como tamaño inicial, pero `initMotor()` lo
   redimensiona solo via `devicePixelRatio` al tamaño real renderizado — no hace falta que
   los frames exportados sean exactamente 784×1361, solo mantener su proporción.
